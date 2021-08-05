@@ -1,3 +1,6 @@
+mod cli;
+
 fn main() {
-	println!("Hello, world!");
+	let matches = cli::setup();
+	println!("{}", matches.is_present("setup"));
 }

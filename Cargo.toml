@@ -10,3 +10,4 @@ license = "MPL-2.0"
 keywords = []
 
 [dependencies]
+clap = "2.33.3"
