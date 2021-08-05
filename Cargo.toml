@@ -1,11 +1,11 @@
 [package]
-name = "project_name"
+name = "kiwi"
 version = "0.1.0"
-description = "project_description"
-authors = ["project_author_full_name <project_author_email>"]
+description = "🏫 Schoolwork as code"
+authors = ["Matt Gleich <email@mattglei.ch>"]
 edition = "2018"
-repository = "https://github.com/github_username/project_name/"
-homepage = "https://github.com/github_username/project_name/"
+repository = "https://github.com/gleich/kiwi/"
+homepage = "https://github.com/gleich/kiwi/"
 license = "MPL-2.0"
 keywords = []
 

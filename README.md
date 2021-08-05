@@ -1,12 +1,12 @@
 <!-- DO NOT REMOVE - contributor_list:data:start:["gleich"]:end -->
 
-# project_name
+# kiwi
 
-[![lint](https://github.com/github_username/project_name/actions/workflows/lint.yml/badge.svg)](https://github.com/github_username/project_name/actions/workflows/lint.yml)
-[![build](https://github.com/github_username/project_name/actions/workflows/build.yml/badge.svg)](https://github.com/github_username/project_name/actions/workflows/build.yml)
-[![test](https://github.com/github_username/project_name/actions/workflows/test.yml/badge.svg)](https://github.com/github_username/project_name/actions/workflows/test.yml)
+[![lint](https://github.com/gleich/kiwi/actions/workflows/lint.yml/badge.svg)](https://github.com/gleich/kiwi/actions/workflows/lint.yml)
+[![build](https://github.com/gleich/kiwi/actions/workflows/build.yml/badge.svg)](https://github.com/gleich/kiwi/actions/workflows/build.yml)
+[![test](https://github.com/gleich/kiwi/actions/workflows/test.yml/badge.svg)](https://github.com/gleich/kiwi/actions/workflows/test.yml)
 
-project_description
+🏫 Schoolwork as code
 
 ## 🙌 Contributing
 
