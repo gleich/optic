@@ -13,3 +13,5 @@ keywords = []
 clap = "2.33.3"
 toml = "0.5.8"
 serde = { version = "1.0.127", features = ["derive"] }
+dialoguer = "0.8.0"
+anyhow = "1.0.42"
