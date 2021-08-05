@@ -6,12 +6,11 @@ use dialoguer::{Confirm, Input, Select};
 
 use crate::conf::{Class, Config};
 
-pub fn run() -> Result<()> {
+pub fn run() {
 	let theme = ColorfulTheme::default();
-	confirm(&theme)?;
-	let toml = ask_config(&theme)?;
+	confirm(&theme).expect("Failed to confirm setup with user");
+	let toml = ask_config(&theme).expect("Failed to ask some questions to generate a config file");
 	println!("{}", toml);
-	Ok(())
 }
 
 /// Confirm with the user that they want to create a kiwi project in the current working directory
