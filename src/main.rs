@@ -1,6 +1,7 @@
 mod cli;
 mod cmds;
 mod conf;
+mod out;
 
 fn main() {
 	let matches = cli::setup();

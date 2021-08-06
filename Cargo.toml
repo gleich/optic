@@ -15,3 +15,4 @@ toml = "0.5.8"
 serde = { version = "1.0.127", features = ["derive"] }
 dialoguer = "0.8.0"
 anyhow = "1.0.42"
+colored = "2.0.0"
