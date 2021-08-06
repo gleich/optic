@@ -4,6 +4,7 @@ use anyhow::{Context, Result};
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::{Confirm, Input, Select};
 
+use crate::conf;
 use crate::conf::{Class, Config};
 use crate::out;
 
@@ -245,18 +246,21 @@ __latexindent_temp.tex
 ";
 
 	// Write to files
-	println!();
-
+	println!("\n--- Creating Everything ---");
 	fs::write("README.md", readme_template)?;
 	out::success("Created to README.md");
 
-	fs::write("kiwi.toml", toml)?;
-	out::success("Created to kiwi configuration file (kiwi.toml)");
+	fs::write(conf::FNAME, toml)?;
+	out::success(&format!(
+		"Created to kiwi configuration file ({})",
+		conf::FNAME
+	));
 
 	fs::write(".gitignore", gitignore)?;
 	out::success("Created .gitignore");
 
 	// Run commands
+	println!();
 	process::Command::new("git")
 		.args(["init", "."])
 		.status()

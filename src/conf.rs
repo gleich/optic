@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+pub const FNAME: &'static str = "kiwi.toml";
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
 	pub name: String,
