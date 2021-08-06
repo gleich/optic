@@ -3,7 +3,7 @@ FROM rust:latest AS builder
 
 # Meta data
 LABEL maintainer="email@mattglei.ch"
-LABEL description="🏫 Schoolwork as code"
+LABEL description="🥝 Schoolwork as code"
 
 # File copy
 COPY . /usr/src/app
