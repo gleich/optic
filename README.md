@@ -6,7 +6,7 @@
 [![build](https://github.com/gleich/kiwi/actions/workflows/build.yml/badge.svg)](https://github.com/gleich/kiwi/actions/workflows/build.yml)
 [![test](https://github.com/gleich/kiwi/actions/workflows/test.yml/badge.svg)](https://github.com/gleich/kiwi/actions/workflows/test.yml)
 
-🏫 Schoolwork as code
+🥝 Schoolwork as code
 
 ## 🙌 Contributing
 

@@ -1,9 +1,9 @@
-commit_message: "chore(syncing): sync files to latest version"
+commit_message: 'chore(syncing): sync files to latest version'
 replace:
   - before: project_name
     after: kiwi
   - before: project_description
-    after: 🏫 Schoolwork as code
+    after: 🥝 Schoolwork as code
   - before: github_username
     after: gleich
   - before: project_author_email
