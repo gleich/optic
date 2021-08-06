@@ -4,9 +4,8 @@ use anyhow::{Context, Result};
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::{Confirm, Input, Select};
 
-use crate::conf;
 use crate::conf::{Class, Config};
-use crate::out;
+use crate::{conf, out};
 
 pub fn run() {
 	let theme = ColorfulTheme::default();
