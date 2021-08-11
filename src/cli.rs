@@ -9,7 +9,7 @@ use crate::conf;
 pub fn setup() -> Result<ArgMatches> {
 	// Getting a list of the classes
 	let config = conf::read(true)?;
-	let classes: Vec<String> = config.classes.into_iter().map(|c| c.name).collect();
+	let classes: &Vec<String> = &config.classes.into_iter().map(|c| c.name).collect();
 
 	let doc_types = DocType::to_vec();
 
@@ -48,6 +48,16 @@ pub fn setup() -> Result<ArgMatches> {
 						.possible_values(
 							&doc_types.iter().map(|s| s as &str).collect::<Vec<&str>>(),
 						),
+				)
+				.arg(
+					Arg::new("format")
+						.long("format")
+						.short('f')
+						.value_name("FORMAT")
+						.about("Format that the file should be created in")
+						.takes_value(true)
+						.possible_values(&["latex", "markdown"])
+						.default_value(&config.default_format),
 				),
 		);
 	if !Path::new(conf::FNAME).exists() {

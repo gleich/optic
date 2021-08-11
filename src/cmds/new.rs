@@ -28,6 +28,7 @@ pub struct File {
 	pub name: String,
 	pub class: String,
 	pub doc_type: String,
+	pub format: String,
 }
 
 pub fn run(matches: &ArgMatches, prompt_theme: &dyn Theme) -> Result<()> {
@@ -52,6 +53,7 @@ fn ask(matches: &ArgMatches, prompt_theme: &dyn Theme) -> Result<File> {
 		name: flag_or_ask(matches, prompt_theme, "name", "Name")?,
 		class: flag_or_ask(matches, prompt_theme, "class", "Class")?,
 		doc_type: flag_or_ask(matches, prompt_theme, "type", "Document Type")?,
+		format: matches.value_of("format").unwrap().to_string(),
 	})
 }
 

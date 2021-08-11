@@ -6,13 +6,17 @@ use serde::{Deserialize, Serialize};
 
 pub const FNAME: &'static str = "kiwi.toml";
 
+fn default_format() -> String { String::from("markdown") }
+
 #[derive(Serialize, Deserialize, Debug, Default)]
-#[serde(default)]
+#[serde(deny_unknown_fields)]
 pub struct Config {
 	pub name: String,
 	pub school_level: String,
 	pub school_type: String,
-	pub default_type: Option<String>,
+	#[serde(default = "default_format")]
+	#[serde(skip_serializing)]
+	pub default_format: String,
 	pub classes: Vec<Class>,
 }
 
