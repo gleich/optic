@@ -1,22 +1,21 @@
 use std::{env, fs, process};
 
 use anyhow::{Context, Result};
-use dialoguer::theme::ColorfulTheme;
+use dialoguer::theme::Theme;
 use dialoguer::{Confirm, Input, Select};
 
 use crate::conf::{Class, Config};
 use crate::{conf, out};
 
-pub fn run() {
-	let theme = ColorfulTheme::default();
-	confirm(&theme).expect("Failed to confirm setup with user");
+pub fn run(prompt_theme: &dyn Theme) {
+	confirm(prompt_theme).expect("Failed to confirm setup with user");
 	let (toml, config) =
-		ask_config(&theme).expect("Failed to ask some questions to generate a config file");
+		ask_config(prompt_theme).expect("Failed to ask some questions to generate a config file");
 	create(toml, config).expect("Failed to create everything");
 }
 
 /// Confirm with the user that they want to create a kiwi project in the current working directory
-fn confirm(theme: &ColorfulTheme) -> Result<()> {
+fn confirm(theme: &dyn Theme) -> Result<()> {
 	let cwd = env::current_dir().context("Failed to get current directory")?;
 	if !Confirm::with_theme(theme)
 		.with_prompt(format!("Create kiwi project in {:?}?", &cwd))
@@ -29,7 +28,7 @@ fn confirm(theme: &ColorfulTheme) -> Result<()> {
 }
 
 /// Ask the user a number of questions to generate a toml configuration file
-fn ask_config(theme: &ColorfulTheme) -> Result<(String, Config)> {
+fn ask_config(theme: &dyn Theme) -> Result<(String, Config)> {
 	println!(
 		"\nYou're now going to input classes. Input \"Done\" as the class name once you've \
 		 inputted all classes.\n"
@@ -85,6 +84,7 @@ fn ask_config(theme: &ColorfulTheme) -> Result<(String, Config)> {
 			.unwrap()
 			.to_string(),
 		classes,
+		..Default::default()
 	};
 	Ok((toml::to_string(&config)?, config))
 }

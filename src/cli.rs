@@ -3,7 +3,7 @@ use std::path::Path;
 use anyhow::Result;
 use clap::{App, AppSettings, Arg, ArgMatches};
 
-use crate::cmds::new;
+use crate::cmds::new::DocType;
 use crate::conf;
 
 pub fn setup() -> Result<ArgMatches> {
@@ -11,8 +11,10 @@ pub fn setup() -> Result<ArgMatches> {
 	let config = conf::read(true)?;
 	let classes: Vec<String> = config.classes.into_iter().map(|c| c.name).collect();
 
+	let doc_types = DocType::to_vec();
+
 	let mut app = App::new("kiwi")
-		.version("v1.0.0")
+		.version("1.0.0")
 		.author("Matt Gleich <email@mattglei.ch>")
 		.about("🥝 Schoolwork as code")
 		.setting(AppSettings::ArgRequiredElseHelp)
@@ -24,7 +26,8 @@ pub fn setup() -> Result<ArgMatches> {
 						.long("name")
 						.short('n')
 						.about("Name of the file")
-						.takes_value(true),
+						.takes_value(true)
+						.value_name("NAME"),
 				)
 				.arg(
 					Arg::new("class")
@@ -32,9 +35,8 @@ pub fn setup() -> Result<ArgMatches> {
 						.short('c')
 						.about("Name of the class")
 						.takes_value(true)
-						.possible_values(
-							&classes.iter().map(|s| s.as_ref()).collect::<Vec<&str>>(),
-						),
+						.value_name("CLASS")
+						.possible_values(&classes.iter().map(|s| s as &str).collect::<Vec<&str>>()),
 				)
 				.arg(
 					Arg::new("type")
@@ -42,7 +44,10 @@ pub fn setup() -> Result<ArgMatches> {
 						.short('t')
 						.about("Document type")
 						.takes_value(true)
-						.possible_values(&new::TYPES),
+						.value_name("TYPE")
+						.possible_values(
+							&doc_types.iter().map(|s| s as &str).collect::<Vec<&str>>(),
+						),
 				),
 		);
 	if !Path::new(conf::FNAME).exists() {
