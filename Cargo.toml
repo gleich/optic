@@ -10,7 +10,7 @@ license = "MPL-2.0"
 keywords = []
 
 [dependencies]
-clap = "3.0.0-beta.2"
+clap = "=3.0.0-beta.2"
 toml = "0.5.8"
 serde = { version = "1.0.127", features = ["derive"] }
 dialoguer = "0.8.0"
