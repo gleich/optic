@@ -1,27 +1,16 @@
-use std::path::Path;
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use chrono::{Datelike, Local, Month};
 use clap::ArgMatches;
 use dialoguer::theme::Theme;
-use dialoguer::Input;
+use dialoguer::Select;
 use num_traits::FromPrimitive;
-use strum::IntoEnumIterator;
-use strum_macros::{EnumIter, ToString};
 
-#[derive(ToString, EnumIter)]
-pub enum DocType {
-	Worksheet,
-	Note,
-	Assessment,
-	Paper,
-	Lab,
-	Other,
-}
-
-impl DocType {
-	pub fn to_vec() -> Vec<String> { DocType::iter().map(|t| t.to_string()).collect() }
-}
+use crate::conf::{Config, Format};
+use crate::{conf, out, util};
 
 #[derive(Debug)]
 pub struct File {
@@ -29,6 +18,7 @@ pub struct File {
 	pub class: String,
 	pub doc_type: String,
 	pub format: String,
+	pub template: PathBuf,
 }
 
 pub fn run(matches: &ArgMatches, prompt_theme: &dyn Theme) -> Result<()> {
@@ -40,36 +30,75 @@ pub fn run(matches: &ArgMatches, prompt_theme: &dyn Theme) -> Result<()> {
 		.join("Worksheet")
 		.join("Test Paper.md");
 	println!("{:?}", folder);
+	let config = conf::read(false)?;
 
-	let file = ask(&subcommand_matches, prompt_theme)?;
+	let file = ask(&config, &subcommand_matches, prompt_theme)?;
 	println!("{:?}", file);
+	// create(&subcommand_matches, &file, &folder, prompt_theme)?;
 
 	Ok(())
 }
 
 /// Ask the user information
-fn ask(matches: &ArgMatches, prompt_theme: &dyn Theme) -> Result<File> {
-	Ok(File {
-		name: flag_or_ask(matches, prompt_theme, "name", "Name")?,
-		class: flag_or_ask(matches, prompt_theme, "class", "Class")?,
-		doc_type: flag_or_ask(matches, prompt_theme, "type", "Document Type")?,
-		format: matches.value_of("format").unwrap().to_string(),
-	})
-}
-
-/// Ask the user for a value if it isn't provided via a flag.
-fn flag_or_ask(
-	matches: &ArgMatches,
-	prompt_theme: &dyn Theme,
-	flag_name: &str,
-	prompt: &str,
-) -> Result<String> {
-	let flag = matches.value_of(flag_name);
-	if flag.is_none() {
-		return Ok(Input::<String>::with_theme(prompt_theme)
-			.with_prompt(prompt)
-			.interact()
-			.context(format!("Failed to get {}", prompt))?);
+fn ask(config: &Config, matches: &ArgMatches, prompt_theme: &dyn Theme) -> Result<File> {
+	// Getting the template that should be used.
+	let template_files = fs::read_dir("templates").context("Failed to get templates")?;
+	let mut file_names = Vec::new();
+	let format = Format::from_str(matches.value_of("format").unwrap())?;
+	for raw_fs_object in template_files {
+		let fs_object = raw_fs_object?;
+		if fs_object.file_type()?.is_file() {
+			let file_name = fs_object.file_name().to_str().unwrap().to_string();
+			if file_name.ends_with("tex.hbs") && format == Format::LaTeX {
+				file_names.push(file_name);
+			} else if file_name.ends_with("md.hbs") && format == Format::Markdown {
+				file_names.push(file_name)
+			}
+		}
 	}
-	Ok(flag.unwrap().to_string())
+
+	if file_names.is_empty() {
+		out::problem(&format!(
+			"No {} templates found",
+			matches.value_of("format").unwrap()
+		))
+	}
+
+	let selected_template: &String = &file_names
+		.get(
+			Select::with_theme(prompt_theme)
+				.with_prompt("Template")
+				.items(&file_names)
+				.interact()
+				.context("Failed to ask the user for the template file to use")?,
+		)
+		.unwrap()
+		.to_owned();
+
+	Ok(File {
+		name: util::flag_or_ask_input(matches, prompt_theme, "name", "Name")?,
+		class: util::flag_or_ask_select(
+			matches,
+			prompt_theme,
+			"class",
+			"Class",
+			config.classes.iter().map(|c| c.name.clone()).collect(),
+		)?,
+		doc_type: util::flag_or_ask_select(
+			matches,
+			prompt_theme,
+			"type",
+			"Type",
+			conf::DocType::to_vec(),
+		)?,
+		// format: matches.value_of("format").unwrap().to_string(),
+		format: util::flag_or_ask_select(
+			matches,
+			prompt_theme,
+			"format",
+			"Format",
+			conf::Format::to_vec(),
+		)?,
+		template: Path::new(".").join("templates").join(selected_template),
+	})
 }

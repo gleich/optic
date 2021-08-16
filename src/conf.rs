@@ -3,10 +3,10 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
+use strum::IntoEnumIterator;
+use strum_macros::{EnumIter, EnumString, ToString};
 
 pub const FNAME: &'static str = "kiwi.toml";
-
-fn default_format() -> String { String::from("markdown") }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(deny_unknown_fields)]
@@ -14,9 +14,9 @@ pub struct Config {
 	pub name: String,
 	pub school_level: String,
 	pub school_type: String,
-	#[serde(default = "default_format")]
 	#[serde(skip_serializing)]
-	pub default_format: String,
+	#[serde(default)]
+	pub default_format: Format,
 	pub classes: Vec<Class>,
 }
 
@@ -24,6 +24,34 @@ pub struct Config {
 pub struct Class {
 	pub name: String,
 	pub teacher: String,
+}
+
+#[derive(ToString, EnumIter, EnumString, PartialEq)]
+pub enum DocType {
+	Worksheet,
+	Note,
+	Assessment,
+	Paper,
+	Lab,
+	Other,
+}
+
+#[derive(ToString, EnumIter, Debug, Serialize, Deserialize, EnumString, PartialEq)]
+pub enum Format {
+	LaTeX,
+	Markdown,
+}
+
+impl DocType {
+	pub fn to_vec<'a>() -> Vec<String> { DocType::iter().map(|t| t.to_string()).collect() }
+}
+
+impl Format {
+	pub fn to_vec<'a>() -> Vec<String> { Format::iter().map(|t| t.to_string()).collect() }
+}
+
+impl Default for Format {
+	fn default() -> Self { Format::Markdown }
 }
 
 /// Read from the config file.

@@ -4,6 +4,7 @@ mod cli;
 mod cmds;
 mod conf;
 mod out;
+mod util;
 
 fn main() {
 	let prompt_theme = ColorfulTheme::default();

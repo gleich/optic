@@ -3,8 +3,7 @@ use std::path::Path;
 use anyhow::Result;
 use clap::{App, AppSettings, Arg, ArgMatches};
 
-use crate::cmds::new::DocType;
-use crate::conf;
+use crate::conf::{self, DocType, Format};
 
 pub fn setup() -> Result<ArgMatches> {
 	// Getting a list of the classes
@@ -12,6 +11,8 @@ pub fn setup() -> Result<ArgMatches> {
 	let classes: &Vec<String> = &config.classes.into_iter().map(|c| c.name).collect();
 
 	let doc_types = DocType::to_vec();
+	let default_format = config.default_format.to_string();
+	let formats = Format::to_vec();
 
 	let mut app = App::new("kiwi")
 		.version("1.0.0")
@@ -56,8 +57,8 @@ pub fn setup() -> Result<ArgMatches> {
 						.value_name("FORMAT")
 						.about("Format that the file should be created in")
 						.takes_value(true)
-						.possible_values(&["latex", "markdown"])
-						.default_value(&config.default_format),
+						.possible_values(&formats.iter().map(|s| s as &str).collect::<Vec<&str>>())
+						.default_value(&default_format),
 				),
 		);
 	if !Path::new(conf::FNAME).exists() {
