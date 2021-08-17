@@ -1,14 +1,18 @@
 use std::{env, fs, process};
 
 use anyhow::{Context, Result};
+use colored::Colorize;
 use dialoguer::theme::Theme;
 use dialoguer::{Confirm, Input, Select};
+use which::which;
 
 use crate::conf::{Class, Config};
+use crate::out::success;
 use crate::{conf, out};
 
 pub fn run(prompt_theme: &dyn Theme) {
 	let steps = Steps { prompt_theme };
+	Steps::clear_env().expect("Required binary check failed");
 	steps.confirm().expect("Failed to confirm setup with user");
 	let (toml, config) = steps
 		.ask_config()
@@ -35,6 +39,25 @@ impl Steps<'_> {
 		Ok(())
 	}
 
+	/// Make sure that the user has the required programs installed and everything is good to go
+	pub fn clear_env() -> Result<()> {
+		// Checking to make sure required binaries are installed
+		let bins = ["git", "pandoc", "pdflatex"];
+		for binary in bins {
+			let path = which(binary).context(format!("Missing required binary: {}", binary))?;
+			success(&format!(
+				"Required binary {} installed at {}",
+				binary.underline(),
+				path.to_str().unwrap().underline()
+			));
+		}
+		println!();
+
+		// Outputting cool animation to user to signify startup
+		success("Environment cleared, initiating setup procedure.\n");
+		Ok(())
+	}
+
 	/// Ask the user a number of questions to generate a toml configuration file
 	pub fn ask_config(&self) -> Result<(String, Config)> {
 		println!(
@@ -54,7 +77,7 @@ impl Steps<'_> {
 			classes.push(Class {
 				name,
 				teacher: Input::with_theme(self.prompt_theme)
-					.with_prompt("Teacher Name")
+					.with_prompt("Teacher's Name")
 					.interact()
 					.context("Failed to ask the name of the teacher")?,
 			});
