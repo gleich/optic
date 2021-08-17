@@ -5,6 +5,7 @@ use std::str::FromStr;
 use anyhow::Result;
 use clap::ArgMatches;
 use dialoguer::theme::Theme;
+use strum::VariantNames;
 
 use crate::conf::{Config, DocType, Format};
 use crate::{cli, conf, inject};
@@ -44,7 +45,7 @@ impl Steps<'_> {
 			prompt_theme,
 			"format",
 			"Format",
-			conf::Format::to_vec(),
+			Format::VARIANTS.to_vec(),
 		)?)?;
 
 		self.branch = Some(Branch {
@@ -54,14 +55,18 @@ impl Steps<'_> {
 				prompt_theme,
 				"class",
 				"Class",
-				self.config.classes.iter().map(|c| c.name.clone()).collect(),
+				self.config
+					.classes
+					.iter()
+					.map(|c| c.name.as_str())
+					.collect(),
 			)?,
 			doc_type: conf::DocType::from_str(&cli::flag_or_ask_select(
 				&self.matches,
 				prompt_theme,
 				"type",
 				"Type",
-				conf::DocType::to_vec(),
+				DocType::VARIANTS.to_vec(),
 			)?)
 			.unwrap(),
 			branch_template_path: Path::new(&cli::flag_or_ask_select(
@@ -69,7 +74,10 @@ impl Steps<'_> {
 				prompt_theme,
 				"branch",
 				"Branch template",
-				conf::list_templates(&format, &conf::TemplateType::Branch)?,
+				conf::list_templates(&format, &conf::TemplateType::Branch)?
+					.iter()
+					.map(AsRef::as_ref)
+					.collect(),
 			)?)
 			.to_path_buf(),
 			root_template_path: Path::new(&cli::flag_or_ask_select(
@@ -77,7 +85,10 @@ impl Steps<'_> {
 				prompt_theme,
 				"root",
 				"Root template",
-				conf::list_templates(&format, &conf::TemplateType::Root)?,
+				conf::list_templates(&format, &conf::TemplateType::Root)?
+					.iter()
+					.map(AsRef::as_ref)
+					.collect(),
 			)?)
 			.to_path_buf(),
 			format,

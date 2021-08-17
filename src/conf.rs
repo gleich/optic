@@ -3,8 +3,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use strum::IntoEnumIterator;
-use strum_macros::{EnumIter, EnumString, ToString};
+use strum_macros::{EnumString, EnumVariantNames, ToString};
 
 pub const FNAME: &str = "kiwi.toml";
 pub const TEMPLATES_DIR: &str = "templates";
@@ -34,7 +33,7 @@ pub struct School {
 	pub type_name: String,
 }
 
-#[derive(ToString, EnumIter, EnumString, PartialEq, Debug)]
+#[derive(EnumVariantNames, ToString, EnumString, PartialEq, Debug)]
 pub enum DocType {
 	Worksheet,
 	Note,
@@ -44,25 +43,17 @@ pub enum DocType {
 	Other,
 }
 
-#[derive(ToString, EnumIter, Debug, Serialize, Deserialize, EnumString, PartialEq)]
+#[derive(EnumVariantNames, ToString, Debug, Serialize, Deserialize, EnumString, PartialEq)]
 pub enum Format {
 	LaTeX,
 	Markdown,
 }
 
 /// Types of templates that the user can write
-#[derive(ToString, PartialEq, Debug, EnumString)]
+#[derive(EnumVariantNames, ToString, PartialEq, Debug, EnumString)]
 pub enum TemplateType {
 	Root,
 	Branch,
-}
-
-impl DocType {
-	pub fn to_vec<'a>() -> Vec<String> { DocType::iter().map(|t| t.to_string()).collect() }
-}
-
-impl Format {
-	pub fn to_vec<'a>() -> Vec<String> { Format::iter().map(|t| t.to_string()).collect() }
 }
 
 impl Default for Format {

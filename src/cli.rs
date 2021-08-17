@@ -4,6 +4,7 @@ use anyhow::{Context, Result};
 use clap::{App, AppSettings, Arg, ArgMatches};
 use dialoguer::theme::Theme;
 use dialoguer::{Input, Select};
+use strum::VariantNames;
 
 use crate::conf::{self, DocType, Format};
 
@@ -12,9 +13,7 @@ pub fn setup() -> Result<ArgMatches> {
 	let config = conf::read(true)?;
 	let classes: &Vec<String> = &config.classes.into_iter().map(|c| c.name).collect();
 
-	let doc_types = DocType::to_vec();
 	let default_format = config.default_format.to_string();
-	let formats = Format::to_vec();
 	let root_files = [
 		conf::list_templates(&Format::LaTeX, &conf::TemplateType::Root)?,
 		conf::list_templates(&Format::Markdown, &conf::TemplateType::Root)?,
@@ -53,9 +52,7 @@ pub fn setup() -> Result<ArgMatches> {
 						.about("Document type")
 						.takes_value(true)
 						.value_name("TYPE")
-						.possible_values(
-							&doc_types.iter().map(|s| s as &str).collect::<Vec<&str>>(),
-						),
+						.possible_values(DocType::VARIANTS),
 				)
 				.arg(
 					Arg::new("format")
@@ -64,7 +61,7 @@ pub fn setup() -> Result<ArgMatches> {
 						.value_name("FORMAT")
 						.about("Format that the file should be created in")
 						.takes_value(true)
-						.possible_values(&formats.iter().map(|s| s as &str).collect::<Vec<&str>>())
+						.possible_values(Format::VARIANTS)
 						.default_value(&default_format),
 				)
 				.arg(
@@ -114,7 +111,7 @@ pub fn flag_or_ask_select(
 	prompt_theme: &dyn Theme,
 	flag_name: &str,
 	prompt: &str,
-	options: Vec<String>,
+	options: Vec<&str>,
 ) -> Result<String> {
 	let flag = matches.value_of(flag_name);
 	if flag.is_none() {
@@ -127,7 +124,7 @@ pub fn flag_or_ask_select(
 					.context(format!("Failed to ask for {}", prompt))?,
 			)
 			.unwrap()
-			.to_owned());
+			.to_string());
 	}
 	Ok(flag.unwrap().to_string())
 }
