@@ -62,6 +62,15 @@ fn ask(config: &Config, matches: &ArgMatches, prompt_theme: &dyn Theme) -> Resul
 			conf::list_templates(&format, &conf::TemplateType::Branch)?,
 		)?)
 		.to_path_buf(),
+		root_template_path: Path::new(&cli::flag_or_ask_select(
+			matches,
+			prompt_theme,
+			"root",
+			"Root template",
+			conf::list_templates(&format, &conf::TemplateType::Root)?,
+		)?)
+		.to_path_buf(),
+		format,
 	})
 }
 

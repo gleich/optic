@@ -15,6 +15,11 @@ pub fn setup() -> Result<ArgMatches> {
 	let doc_types = DocType::to_vec();
 	let default_format = config.default_format.to_string();
 	let formats = Format::to_vec();
+	let root_files = [
+		conf::list_templates(&Format::LaTeX, &conf::TemplateType::Root)?,
+		conf::list_templates(&Format::Markdown, &conf::TemplateType::Root)?,
+	]
+	.concat();
 
 	let mut app = App::new("kiwi")
 		.version("1.0.0")
@@ -67,8 +72,19 @@ pub fn setup() -> Result<ArgMatches> {
 						.long("branch")
 						.short('b')
 						.value_name("PATH")
-						.about("Filename of branch template file to use")
+						.about("Filename of the branch template file")
 						.takes_value(true),
+				)
+				.arg(
+					Arg::new("root")
+						.long("root")
+						.short('r')
+						.value_name("PATH")
+						.about("Filename of the root file")
+						.takes_value(true)
+						.possible_values(
+							&root_files.iter().map(|s| s as &str).collect::<Vec<&str>>(),
+						),
 				),
 		);
 	if !Path::new(conf::FNAME).exists() {
