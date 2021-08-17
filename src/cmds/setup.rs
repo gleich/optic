@@ -69,28 +69,32 @@ impl Steps<'_> {
 				.with_prompt("First and last name?")
 				.interact()
 				.context("Failed to ask for first and last name")?,
-			school_level: school_levels
-				.get(
-					Select::with_theme(self.prompt_theme)
-						.with_prompt("School level")
-						.default(0)
-						.items(&school_levels)
-						.interact()
-						.context("Failed to ask for school level")?,
-				)
-				.unwrap()
-				.to_string(),
-			school_type: school_types
-				.get(
-					Select::with_theme(self.prompt_theme)
-						.with_prompt("School type")
-						.default(0)
-						.items(&school_types)
-						.interact()
-						.context("Failed to ask for school type")?,
-				)
-				.unwrap()
-				.to_string(),
+			school: conf::School {
+				level: school_levels
+					.get(
+						Select::with_theme(self.prompt_theme)
+							.with_prompt("School level")
+							.default(0)
+							.items(&school_levels)
+							.interact()
+							.context("Failed to ask for school level")?,
+					)
+					.unwrap()
+					.to_string(),
+
+				type_name: school_types
+					.get(
+						Select::with_theme(self.prompt_theme)
+							.with_prompt("School type")
+							.default(0)
+							.items(&school_types)
+							.interact()
+							.context("Failed to ask for school type")?,
+					)
+					.unwrap()
+					.to_string(),
+			},
+			classes,
 			..Default::default()
 		};
 		Ok((toml::to_string(&config)?, config))
@@ -99,15 +103,40 @@ impl Steps<'_> {
 	/// Create all the files and run any setup commands needed
 	pub fn create(toml: String, config: Config) -> Result<()> {
 		let readme_template = format!(
-			"
-# {} Year of {}
+			"# {} Year of {}
 
 🥝 A new [kiwi](https://github.com/gleich/kiwi) project.
 ",
-			config.school_level, config.school_type
+			config.school.level, config.school.type_name
 		);
-		let gitignore = "
-## Core latex/pdflatex auxiliary files:
+
+		// Write to files
+		println!("\n--- Creating Everything ---");
+		fs::write("README.md", readme_template)?;
+		out::success("Created to README.md");
+
+		fs::write(conf::FNAME, toml)?;
+		out::success(&format!(
+			"Created to kiwi configuration file ({})",
+			conf::FNAME
+		));
+
+		fs::write(".gitignore", files::GITIGNORE)?;
+		out::success("Created .gitignore");
+
+		// Run commands
+		println!();
+		process::Command::new("git")
+			.args(["init", "."])
+			.status()
+			.context("Failed to run git init .")?;
+
+		Ok(())
+	}
+}
+
+mod files {
+	pub const GITIGNORE: &str = "## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
 *.log
@@ -250,28 +279,4 @@ sympy-plots-for-*.tex/
 # LaTeX formatter temp file
 __latexindent_temp.tex
 ";
-
-		// Write to files
-		println!("\n--- Creating Everything ---");
-		fs::write("README.md", readme_template)?;
-		out::success("Created to README.md");
-
-		fs::write(conf::FNAME, toml)?;
-		out::success(&format!(
-			"Created to kiwi configuration file ({})",
-			conf::FNAME
-		));
-
-		fs::write(".gitignore", gitignore)?;
-		out::success("Created .gitignore");
-
-		// Run commands
-		println!();
-		process::Command::new("git")
-			.args(["init", "."])
-			.status()
-			.context("Failed to run git init .")?;
-
-		Ok(())
-	}
 }

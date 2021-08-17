@@ -1,7 +1,9 @@
 use std::path::Path;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::{App, AppSettings, Arg, ArgMatches};
+use dialoguer::theme::Theme;
+use dialoguer::{Input, Select};
 
 use crate::conf::{self, DocType, Format};
 
@@ -59,10 +61,57 @@ pub fn setup() -> Result<ArgMatches> {
 						.takes_value(true)
 						.possible_values(&formats.iter().map(|s| s as &str).collect::<Vec<&str>>())
 						.default_value(&default_format),
+				)
+				.arg(
+					Arg::new("branch")
+						.long("branch")
+						.short('b')
+						.value_name("PATH")
+						.about("Filename of branch template file to use")
+						.takes_value(true),
 				),
 		);
 	if !Path::new(conf::FNAME).exists() {
 		app = app.subcommand(App::new("setup").about("Setup a kiwi project"));
 	}
 	Ok(app.get_matches())
+}
+
+pub fn flag_or_ask_input(
+	matches: &ArgMatches,
+	prompt_theme: &dyn Theme,
+	flag_name: &str,
+	prompt: &str,
+) -> Result<String> {
+	let flag = matches.value_of(flag_name);
+	if flag.is_none() {
+		return Ok(Input::<String>::with_theme(prompt_theme)
+			.with_prompt(prompt)
+			.interact()
+			.context(format!("Failed to get {}", prompt))?);
+	}
+	Ok(flag.unwrap().to_string())
+}
+
+pub fn flag_or_ask_select(
+	matches: &ArgMatches,
+	prompt_theme: &dyn Theme,
+	flag_name: &str,
+	prompt: &str,
+	options: Vec<String>,
+) -> Result<String> {
+	let flag = matches.value_of(flag_name);
+	if flag.is_none() {
+		return Ok(options
+			.get(
+				Select::with_theme(prompt_theme)
+					.with_prompt(prompt)
+					.items(&options)
+					.interact()
+					.context(format!("Failed to ask for {}", prompt))?,
+			)
+			.unwrap()
+			.to_owned());
+	}
+	Ok(flag.unwrap().to_string())
 }

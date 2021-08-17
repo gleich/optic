@@ -3,8 +3,8 @@ use dialoguer::theme::ColorfulTheme;
 mod cli;
 mod cmds;
 mod conf;
+mod inject;
 mod out;
-mod util;
 
 fn main() {
 	let prompt_theme = ColorfulTheme::default();
