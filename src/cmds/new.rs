@@ -16,26 +16,26 @@ struct File {
 	doc_type: DocType,
 	format: Format,
 	branch_template_path: PathBuf,
+	root_template_path: PathBuf,
 }
 
-pub fn run(matches: &ArgMatches, prompt_theme: &dyn Theme) -> Result<()> {
+pub fn run(matches: &ArgMatches, prompt_theme: &dyn Theme) {
 	let subcommand_matches = matches.subcommand_matches("new").unwrap();
-	let config = conf::read(false)?;
-	let file = ask(&config, &subcommand_matches, prompt_theme)?;
-	create(&file, &config)?;
-
-	Ok(())
+	let config = conf::read(false).expect("Failed to read from the configuration file");
+	let file = ask(&config, &subcommand_matches, prompt_theme)
+		.expect("Failed to ask user for info about the branch");
+	create(&file, &config).expect("Failed to create the file");
 }
 
 /// Ask the user information
 fn ask(config: &Config, matches: &ArgMatches, prompt_theme: &dyn Theme) -> Result<File> {
-	let format = cli::flag_or_ask_select(
+	let format = conf::Format::from_str(&cli::flag_or_ask_select(
 		matches,
 		prompt_theme,
 		"format",
 		"Format",
 		conf::Format::to_vec(),
-	)?;
+	)?)?;
 
 	Ok(File {
 		name: cli::flag_or_ask_input(matches, prompt_theme, "name", "Name")?,
@@ -54,16 +54,12 @@ fn ask(config: &Config, matches: &ArgMatches, prompt_theme: &dyn Theme) -> Resul
 			conf::DocType::to_vec(),
 		)?)
 		.unwrap(),
-		format: conf::Format::from_str(&format).unwrap(),
 		branch_template_path: Path::new(&cli::flag_or_ask_select(
 			matches,
 			prompt_theme,
 			"branch",
 			"Branch template",
-			conf::list_templates(
-				&conf::Format::from_str(&format).unwrap(),
-				&conf::TemplateType::Branch,
-			)?,
+			conf::list_templates(&format, &conf::TemplateType::Branch)?,
 		)?)
 		.to_path_buf(),
 	})

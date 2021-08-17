@@ -12,6 +12,6 @@ fn main() {
 	if matches.is_present("setup") {
 		cmds::setup::run(&prompt_theme);
 	} else if matches.is_present("new") {
-		cmds::new::run(&matches, &prompt_theme).expect("Failed to run new command");
+		cmds::new::run(&matches, &prompt_theme);
 	}
 }

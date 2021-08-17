@@ -41,7 +41,6 @@ impl Steps<'_> {
 
 	/// Make sure that the user has the required programs installed and everything is good to go
 	pub fn clear_env() -> Result<()> {
-		// Checking to make sure required binaries are installed
 		let bins = ["git", "pandoc", "pdflatex"];
 		for binary in bins {
 			let path = which(binary).context(format!("Missing required binary: {}", binary))?;
@@ -53,7 +52,6 @@ impl Steps<'_> {
 		}
 		println!();
 
-		// Outputting cool animation to user to signify startup
 		success("Environment cleared, initiating setup procedure.\n");
 		Ok(())
 	}
