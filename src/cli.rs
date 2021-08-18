@@ -2,11 +2,13 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use clap::{App, AppSettings, Arg, ArgMatches};
+use colored::Colorize;
 use dialoguer::theme::Theme;
 use dialoguer::{Input, Select};
 use strum::VariantNames;
 
 use crate::conf::{self, DocType, Format};
+use crate::out::success;
 
 pub fn setup() -> Result<ArgMatches> {
 	let config = conf::read(true)?;
@@ -98,7 +100,13 @@ pub fn flag_or_input(
 			.interact()
 			.context(format!("Failed to get {}", prompt))?);
 	}
-	Ok(flag.unwrap().to_string())
+	let value = flag.unwrap();
+	success(&format!(
+		"{} obtained from flag with value of {}",
+		prompt.blue(),
+		value.bold().underline()
+	));
+	Ok(value.to_string())
 }
 
 pub fn flag_or_select(
@@ -121,5 +129,11 @@ pub fn flag_or_select(
 			.unwrap()
 			.to_string());
 	}
-	Ok(flag.unwrap().to_string())
+	let value = flag.unwrap();
+	success(&format!(
+		"{} obtained from flag with value of {}",
+		prompt.blue(),
+		value.bold().underline()
+	));
+	Ok(value.to_string())
 }

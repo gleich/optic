@@ -96,12 +96,14 @@ impl Steps<'_> {
 			.to_path_buf(),
 			format,
 		});
+		println!();
+		success("Obtained information about file");
 		Ok(())
 	}
 
 	pub fn create(&self) -> Result<()> {
 		let branch = self.branch.as_ref().unwrap();
-		let content = inject::base(
+		let content = inject::inject(
 			branch.doc_type.to_string(),
 			branch.root_template_path.to_str().unwrap(),
 			branch.class.to_string(),
@@ -113,6 +115,7 @@ impl Steps<'_> {
 					.join(&branch.branch_template_path),
 			)?,
 		)?;
+		success("Injected variables into template");
 		let path = Path::new("docs")
 			.join(&branch.class)
 			.join(Month::from_u32(Local::now().month()).unwrap().name())

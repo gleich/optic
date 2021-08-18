@@ -6,7 +6,8 @@ use serde_json::json;
 
 use crate::conf::{Config, Format};
 
-pub fn base(
+/// Inject a bunch of data into a template string using the handlebars template engine.
+pub fn inject(
 	branch_filename: String,
 	root_filename: &str,
 	class_name: String,
