@@ -9,16 +9,11 @@ use strum::VariantNames;
 use crate::conf::{self, DocType, Format};
 
 pub fn setup() -> Result<ArgMatches> {
-	// Getting a list of the classes
 	let config = conf::read(true)?;
 	let classes: &Vec<String> = &config.classes.into_iter().map(|c| c.name).collect();
 
 	let default_format = config.default_format.to_string();
-	let root_files = [
-		conf::list_templates(&Format::LaTeX, &conf::TemplateType::Root)?,
-		conf::list_templates(&Format::Markdown, &conf::TemplateType::Root)?,
-	]
-	.concat();
+	let root_files = conf::list_templates(&Format::LaTeX, &conf::TemplateType::Root)?;
 
 	let mut app = App::new("kiwi")
 		.version("1.0.0")
@@ -90,7 +85,7 @@ pub fn setup() -> Result<ArgMatches> {
 	Ok(app.get_matches())
 }
 
-pub fn flag_or_ask_input(
+pub fn flag_or_input(
 	matches: &ArgMatches,
 	prompt_theme: &dyn Theme,
 	flag_name: &str,
@@ -106,7 +101,7 @@ pub fn flag_or_ask_input(
 	Ok(flag.unwrap().to_string())
 }
 
-pub fn flag_or_ask_select(
+pub fn flag_or_select(
 	matches: &ArgMatches,
 	prompt_theme: &dyn Theme,
 	flag_name: &str,

@@ -2,12 +2,15 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use anyhow::Result;
+use anyhow::{bail, Result};
+use chrono::{Datelike, Local, Month};
 use clap::ArgMatches;
 use dialoguer::theme::Theme;
+use num_traits::FromPrimitive;
 use strum::VariantNames;
 
 use crate::conf::{Config, DocType, Format};
+use crate::out::success;
 use crate::{cli, conf, inject};
 
 pub fn run(matches: &ArgMatches, prompt_theme: &dyn Theme) {
@@ -40,7 +43,7 @@ struct Steps<'a> {
 impl Steps<'_> {
 	/// Ask the user information
 	pub fn ask(&mut self, prompt_theme: &dyn Theme) -> Result<()> {
-		let format = conf::Format::from_str(&cli::flag_or_ask_select(
+		let format = conf::Format::from_str(&cli::flag_or_select(
 			&self.matches,
 			prompt_theme,
 			"format",
@@ -49,8 +52,8 @@ impl Steps<'_> {
 		)?)?;
 
 		self.branch = Some(Branch {
-			name: cli::flag_or_ask_input(&self.matches, prompt_theme, "name", "Name")?,
-			class: cli::flag_or_ask_select(
+			name: cli::flag_or_input(&self.matches, prompt_theme, "name", "Name")?,
+			class: cli::flag_or_select(
 				&self.matches,
 				prompt_theme,
 				"class",
@@ -61,7 +64,7 @@ impl Steps<'_> {
 					.map(|c| c.name.as_str())
 					.collect(),
 			)?,
-			doc_type: conf::DocType::from_str(&cli::flag_or_ask_select(
+			doc_type: conf::DocType::from_str(&cli::flag_or_select(
 				&self.matches,
 				prompt_theme,
 				"type",
@@ -69,7 +72,7 @@ impl Steps<'_> {
 				DocType::VARIANTS.to_vec(),
 			)?)
 			.unwrap(),
-			branch_template_path: Path::new(&cli::flag_or_ask_select(
+			branch_template_path: Path::new(&cli::flag_or_select(
 				&self.matches,
 				prompt_theme,
 				"branch",
@@ -80,12 +83,12 @@ impl Steps<'_> {
 					.collect(),
 			)?)
 			.to_path_buf(),
-			root_template_path: Path::new(&cli::flag_or_ask_select(
+			root_template_path: Path::new(&cli::flag_or_select(
 				&self.matches,
 				prompt_theme,
 				"root",
 				"Root template",
-				conf::list_templates(&format, &conf::TemplateType::Root)?
+				conf::list_templates(&Format::LaTeX, &conf::TemplateType::Root)?
 					.iter()
 					.map(AsRef::as_ref)
 					.collect(),
@@ -97,19 +100,36 @@ impl Steps<'_> {
 	}
 
 	pub fn create(&self) -> Result<()> {
-		// Create file contents
 		let branch = self.branch.as_ref().unwrap();
-		let path = Path::new("templates")
-			.join(conf::TemplateType::Branch.to_string())
-			.join(&branch.branch_template_path);
 		let contents = inject::BaseData {
 			doc_name: &branch.name,
 			class_name: &branch.class,
 			format: &branch.format,
 			config: &self.config,
 		}
-		.inject_into(&fs::read_to_string(path)?)?;
-		println!("{}", contents);
+		.inject_into(&fs::read_to_string(
+			Path::new("templates")
+				.join(conf::TemplateType::Branch.to_string())
+				.join(&branch.branch_template_path),
+		)?)?;
+		let path = Path::new("docs")
+			.join(&branch.class)
+			.join(Month::from_u32(Local::now().month()).unwrap().name())
+			.join(&branch.doc_type.to_string().to_lowercase())
+			.join(format!(
+				"{}.{}",
+				&branch.name,
+				match branch.format {
+					Format::LaTeX => "tex",
+					Format::Markdown => "md",
+				}
+			));
+		fs::create_dir_all(path.parent().unwrap())?;
+		if path.exists() {
+			bail!("{} already exists", &path.to_str().unwrap());
+		}
+		fs::write(&path, contents)?;
+		success(&format!("Created to {}", &path.to_str().unwrap()));
 		Ok(())
 	}
 }
