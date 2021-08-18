@@ -101,17 +101,17 @@ impl Steps<'_> {
 
 	pub fn create(&self) -> Result<()> {
 		let branch = self.branch.as_ref().unwrap();
-		let contents = inject::BaseData {
-			doc_name: &branch.name,
-			class_name: &branch.class,
-			format: &branch.format,
-			config: &self.config,
-		}
-		.inject_into(&fs::read_to_string(
-			Path::new("templates")
-				.join(conf::TemplateType::Branch.to_string())
-				.join(&branch.branch_template_path),
-		)?)?;
+		let content = inject::base(
+			branch.doc_type.to_string(),
+			branch.class.to_string(),
+			&branch.format,
+			&self.config,
+			fs::read_to_string(
+				Path::new("templates")
+					.join(conf::TemplateType::Branch.to_string())
+					.join(&branch.branch_template_path),
+			)?,
+		)?;
 		let path = Path::new("docs")
 			.join(&branch.class)
 			.join(Month::from_u32(Local::now().month()).unwrap().name())
@@ -128,7 +128,7 @@ impl Steps<'_> {
 		if path.exists() {
 			bail!("{} already exists", &path.to_str().unwrap());
 		}
-		fs::write(&path, contents)?;
+		fs::write(&path, content)?;
 		success(&format!("Created to {}", &path.to_str().unwrap()));
 		Ok(())
 	}
