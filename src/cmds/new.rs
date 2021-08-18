@@ -133,7 +133,7 @@ impl Steps<'_> {
 			bail!("{} already exists", &path.to_str().unwrap());
 		}
 		fs::write(&path, content)?;
-		success(&format!("Created to {}", &path.to_str().unwrap()));
+		success(&format!("Created {}", &path.to_str().unwrap()));
 		Ok(())
 	}
 }

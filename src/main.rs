@@ -1,4 +1,4 @@
-use dialoguer::theme::ColorfulTheme;
+use out::custom_dialoguer_theme;
 
 mod cli;
 mod cmds;
@@ -7,7 +7,7 @@ mod inject;
 mod out;
 
 fn main() {
-	let prompt_theme = ColorfulTheme::default();
+	let prompt_theme = custom_dialoguer_theme();
 	let matches = cli::setup().expect("Failed to setup CLI");
 	if matches.is_present("setup") {
 		cmds::setup::run(&prompt_theme);
