@@ -7,7 +7,8 @@ use serde_json::json;
 use crate::conf::{Config, Format};
 
 pub fn base(
-	doc_name: String,
+	branch_filename: String,
+	root_filename: &str,
 	class_name: String,
 	format: &Format,
 	config: &Config,
@@ -18,19 +19,20 @@ pub fn base(
 		&template_string,
 		&json!({
 			"time": {
-				"raw_date": &now.date().to_string(),
-				"day": &now.day(),
-				"year": &now.year(),
+				"simple_date": now.format("%F").to_string(),
+				"day": now.day(),
+				"year": now.year(),
 				"date": match format {
 					Format::Markdown => now.format(&format!("%A, %B ^{}^, %Y", Ordinal(now.day()))).to_string(),
 					Format::LaTeX => now.format(&format!("%A, %B \\textsuperscript{{{}}}, %Y", Ordinal(now.day()))).to_string()
 				}
 			},
-			"file_name": doc_name,
-			"name": doc_name.replace("_", " ").replace("-", " ").trim_end_matches(match format {
+			"branch_filename": branch_filename,
+			"name": branch_filename.replace("_", " ").replace("-", " ").trim_end_matches(match format {
 					Format::Markdown => ".md",
 					Format::LaTeX => ".tex",
 				}),
+			"root_filename": root_filename,
 			"author": config.name,
 			"class": {
 				"name": class_name,

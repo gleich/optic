@@ -103,6 +103,7 @@ impl Steps<'_> {
 		let branch = self.branch.as_ref().unwrap();
 		let content = inject::base(
 			branch.doc_type.to_string(),
+			branch.root_template_path.to_str().unwrap(),
 			branch.class.to_string(),
 			&branch.format,
 			&self.config,
