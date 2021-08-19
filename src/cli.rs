@@ -83,9 +83,8 @@ pub fn setup() -> Result<ArgMatches> {
 		.subcommand(
 			App::new("build").about("Build a branch").arg(
 				Arg::new("path")
-					.about("Path to the file")
+					.about("Path to the file. Defaults to the most recent branch to be updated")
 					.value_name("PATH")
-					.default_value("Most recent branch to be updated")
 					.index(1)
 					.required(false),
 			),
