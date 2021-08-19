@@ -90,7 +90,7 @@ fn create(branch: &Branch, config: &Config) -> Result<()> {
 	let content = inject::inject(
 		branch.doc_type.to_string(),
 		branch.root_template_path.to_str().unwrap(),
-		branch.class.to_string(),
+		branch.class.as_str(),
 		&branch.format,
 		config,
 		fs::read_to_string(

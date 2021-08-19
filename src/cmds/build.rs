@@ -1,11 +1,12 @@
 use std::ffi::OsStr;
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::{env, fs};
 
-use anyhow::Result;
-use chrono::NaiveDateTime;
+use anyhow::{bail, Context, Result};
+use chrono::{Datelike, Month, NaiveDateTime};
 use clap::ArgMatches;
+use num_traits::FromPrimitive;
 use walkdir::WalkDir;
 
 use crate::conf::{self, Format, TemplateType};
@@ -40,7 +41,7 @@ pub fn run(matches: &ArgMatches) {
 			.unwrap()
 			.to_string(),
 		branch_data.root.file_name().unwrap().to_str().unwrap(),
-		branch_data.class_name,
+		&branch_data.class_name,
 		&Format::LaTeX,
 		&config,
 		fs::read_to_string(&branch_data.root).expect("Failed to read from root file"),
@@ -50,8 +51,16 @@ pub fn run(matches: &ArgMatches) {
 				convert_to_latex(&branch_path).expect("Failed to convert branch file to latex")
 			}
 		}),
-	);
-	println!("{:?}", latex);
+	)
+	.expect("Failed to inject variables into root file");
+	generate_pdf(
+		&latex,
+		&branch_data.name,
+		&branch_data.class_name,
+		&branch_data.created,
+		branch_path.parent().unwrap().file_name().unwrap(),
+	)
+	.expect("Failed to generate PDF file");
 }
 
 /// Get the file that should be built
@@ -98,6 +107,8 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 	let branch_extension = branch_path.extension().unwrap().to_str().unwrap();
 	Ok(Branch {
 		name: branch_path
+			.file_name()
+			.unwrap()
 			.to_str()
 			.unwrap()
 			.trim_end_matches(branch_extension)
@@ -133,8 +144,59 @@ fn convert_to_latex(branch_path: &PathBuf) -> Result<String> {
 		.arg("markdown-auto_identifiers")
 		.arg("-w")
 		.arg("latex")
+		.arg("--pdf-engine")
+		.arg("pdflatex")
 		.arg(branch_path.to_str().unwrap())
 		.stdout(Stdio::piped())
 		.output()?;
 	Ok(String::from_utf8(output.stdout)?)
+}
+
+fn generate_pdf(
+	latex: &str,
+	doc_name: &str,
+	class_name: &str,
+	created_time: &NaiveDateTime,
+	doc_type_name: &OsStr,
+) -> Result<()> {
+	let build_dir = Path::new("assembler");
+	if build_dir.exists() {
+		fs::remove_dir_all(build_dir)?;
+	}
+	fs::create_dir(build_dir)?;
+	env::set_current_dir(build_dir)?;
+
+	// Write to LaTeX file and building PDF
+	let latex_fname = "build.tex";
+	fs::write(latex_fname, latex)?;
+	let output = Command::new("pdflatex")
+		.arg(latex_fname)
+		.stdout(Stdio::piped())
+		.output()?;
+	if !output.status.success() {
+		let failed_log_fname = "failure.log";
+		fs::write(failed_log_fname, output.stdout)?;
+		bail!(
+			"Failed to generate PDF. Please check {} in {}",
+			failed_log_fname,
+			build_dir.to_str().unwrap()
+		);
+	}
+	env::set_current_dir("..")?;
+
+	// Moving generated PDF to it's home
+	let pdf_fname = format!("{}pdf", doc_name);
+	let pdf_dir = Path::new("pdfs")
+		.join(class_name)
+		.join(Month::from_u32(created_time.month()).unwrap().name())
+		.join(doc_type_name);
+	fs::create_dir_all(&pdf_dir)?;
+	fs::rename(
+		Path::new(build_dir).join("build.pdf"),
+		pdf_dir.join(&pdf_fname),
+	)
+	.context("Failed to move generated PDF from build directory to pdfs folder")?;
+
+	fs::remove_dir_all(build_dir)?;
+	Ok(())
 }

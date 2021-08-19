@@ -10,7 +10,7 @@ use crate::conf::{Config, Format};
 pub fn inject(
 	branch_filename: String,
 	root_filename: &str,
-	class_name: String,
+	class_name: &str,
 	format: &Format,
 	config: &Config,
 	template_string: String,
