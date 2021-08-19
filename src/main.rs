@@ -1,3 +1,4 @@
+use cmds::{build, new, setup};
 use out::custom_dialoguer_theme;
 
 mod cli;
@@ -10,10 +11,10 @@ fn main() {
 	let prompt_theme = custom_dialoguer_theme();
 	let matches = cli::setup().expect("Failed to setup CLI");
 	if matches.is_present("setup") {
-		cmds::setup::run(&prompt_theme);
+		setup::run(&prompt_theme);
 	} else if matches.is_present("new") {
-		cmds::new::run(&matches, &prompt_theme);
+		new::run(&matches, &prompt_theme);
 	} else if matches.is_present("build") {
-		cmds::build::run(&matches)
+		build::run(&matches)
 	}
 }
