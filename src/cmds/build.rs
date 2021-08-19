@@ -6,12 +6,13 @@ use std::{env, fs};
 use anyhow::{bail, Context, Result};
 use chrono::{Datelike, Month, NaiveDateTime};
 use clap::ArgMatches;
+use colored::Colorize;
 use num_traits::FromPrimitive;
 use walkdir::WalkDir;
 
 use crate::conf::{self, Format, TemplateType};
 use crate::inject::inject;
-use crate::out::ARROW_CHARACTERS;
+use crate::out::{success, ARROW_CHARACTERS};
 
 #[derive(Debug)]
 struct Branch {
@@ -86,7 +87,12 @@ fn branch_to_build(matches: &ArgMatches) -> Result<PathBuf> {
 			}
 		}
 	}
-	Ok(file.unwrap().path().to_path_buf())
+	let path = file.unwrap().path().to_path_buf();
+	success(&format!(
+		"Building {}",
+		&path.to_str().unwrap().green().underline().bold()
+	));
+	Ok(path)
 }
 
 fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
@@ -105,7 +111,7 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 
 	let lines: Vec<&str> = content.split("\n").collect();
 	let branch_extension = branch_path.extension().unwrap().to_str().unwrap();
-	Ok(Branch {
+	let branch = Branch {
 		name: branch_path
 			.file_name()
 			.unwrap()
@@ -135,7 +141,9 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 			),
 		class_name: extract_variable("class", &lines)
 			.expect("Failed to extract \"class\" field from preamble"),
-	})
+	};
+	success("Extracted data from branch");
+	Ok(branch)
 }
 
 fn convert_to_latex(branch_path: &PathBuf) -> Result<String> {
@@ -149,6 +157,7 @@ fn convert_to_latex(branch_path: &PathBuf) -> Result<String> {
 		.arg(branch_path.to_str().unwrap())
 		.stdout(Stdio::piped())
 		.output()?;
+	success("Converted markdown to LaTeX");
 	Ok(String::from_utf8(output.stdout)?)
 }
 
@@ -159,14 +168,14 @@ fn generate_pdf(
 	created_time: &NaiveDateTime,
 	doc_type_name: &OsStr,
 ) -> Result<()> {
-	let build_dir = Path::new("assembler");
+	let build_dir = Path::new("build");
 	if build_dir.exists() {
 		fs::remove_dir_all(build_dir)?;
 	}
 	fs::create_dir(build_dir)?;
 	env::set_current_dir(build_dir)?;
 
-	// Write to LaTeX file and building PDF
+	println!("{}", "\n  Building PDF".yellow());
 	let latex_fname = "build.tex";
 	fs::write(latex_fname, latex)?;
 	let output = Command::new("pdflatex")
@@ -182,20 +191,23 @@ fn generate_pdf(
 			build_dir.to_str().unwrap()
 		);
 	}
+	success("Built PDF");
 	env::set_current_dir("..")?;
 
 	// Moving generated PDF to it's home
-	let pdf_fname = format!("{}pdf", doc_name);
 	let pdf_dir = Path::new("pdfs")
 		.join(class_name)
 		.join(Month::from_u32(created_time.month()).unwrap().name())
 		.join(doc_type_name);
+	let pdf_fname = pdf_dir.join(format!("{}pdf", doc_name));
 	fs::create_dir_all(&pdf_dir)?;
-	fs::rename(
-		Path::new(build_dir).join("build.pdf"),
-		pdf_dir.join(&pdf_fname),
-	)
-	.context("Failed to move generated PDF from build directory to pdfs folder")?;
+	fs::rename(Path::new(build_dir).join("build.pdf"), &pdf_fname)
+		.context("Failed to move generated PDF from build directory to pdfs folder")?;
+	println!();
+	success(&format!(
+		"Created PDF file: {}",
+		&pdf_fname.to_str().unwrap().green().bold().underline()
+	));
 
 	fs::remove_dir_all(build_dir)?;
 	Ok(())
