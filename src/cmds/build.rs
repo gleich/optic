@@ -1,13 +1,15 @@
 use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
 
 use anyhow::Result;
 use chrono::NaiveDateTime;
 use clap::ArgMatches;
 use walkdir::WalkDir;
 
-use crate::conf::{Format, TemplateType};
+use crate::conf::{self, Format, TemplateType};
+use crate::inject::inject;
 use crate::out::ARROW_CHARACTERS;
 
 #[derive(Debug)]
@@ -22,13 +24,34 @@ struct Branch {
 
 pub fn run(matches: &ArgMatches) {
 	let subcommand_matches = matches.subcommand_matches("build").unwrap();
+	let config = conf::read(false).expect("Failed to read from the configuration file");
 	let branch_path =
 		branch_to_build(subcommand_matches).expect("Failed to get what file should be built");
 	let branch_contents =
 		fs::read_to_string(&branch_path).expect("Failed to read from branch file");
 	let branch_data = extract_branch_data(&branch_contents, &branch_path)
 		.expect("Failed to extract data from branch file");
-	println!("{:?}", branch_data);
+	let latex = inject(
+		branch_data
+			.path
+			.file_name()
+			.unwrap()
+			.to_str()
+			.unwrap()
+			.to_string(),
+		branch_data.root.file_name().unwrap().to_str().unwrap(),
+		branch_data.class_name,
+		&Format::LaTeX,
+		&config,
+		fs::read_to_string(&branch_data.root).expect("Failed to read from root file"),
+		Some(match branch_data.format {
+			Format::LaTeX => branch_contents,
+			Format::Markdown => {
+				convert_to_latex(&branch_path).expect("Failed to convert branch file to latex")
+			}
+		}),
+	);
+	println!("{:?}", latex);
 }
 
 /// Get the file that should be built
@@ -72,13 +95,14 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 	}
 
 	let lines: Vec<&str> = content.split("\n").collect();
+	let branch_extension = branch_path.extension().unwrap().to_str().unwrap();
 	Ok(Branch {
 		name: branch_path
 			.to_str()
 			.unwrap()
-			.trim_end_matches(branch_path.extension().unwrap().to_str().unwrap())
+			.trim_end_matches(branch_extension)
 			.to_string(),
-		format: match branch_path.extension().unwrap().to_str().unwrap() {
+		format: match branch_extension {
 			"md" => Format::Markdown,
 			_ => Format::LaTeX,
 		},
@@ -101,4 +125,16 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 		class_name: extract_variable("class", &lines)
 			.expect("Failed to extract \"class\" field from preamble"),
 	})
+}
+
+fn convert_to_latex(branch_path: &PathBuf) -> Result<String> {
+	let output = Command::new("pandoc")
+		.arg("-r")
+		.arg("markdown-auto_identifiers")
+		.arg("-w")
+		.arg("latex")
+		.arg(branch_path.to_str().unwrap())
+		.stdout(Stdio::piped())
+		.output()?;
+	Ok(String::from_utf8(output.stdout)?)
 }

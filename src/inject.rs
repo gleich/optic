@@ -14,6 +14,7 @@ pub fn inject(
 	format: &Format,
 	config: &Config,
 	template_string: String,
+	branch_content: Option<String>,
 ) -> Result<String> {
 	let now = Local::now();
 
@@ -33,7 +34,6 @@ pub fn inject(
 					Format::LaTeX => now.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
 				}
 			},
-			"branch_filename": branch_filename,
 			"name": branch_filename.replace("_", " ").replace("-", " ").trim_end_matches(match format {
 					Format::Markdown => ".md",
 					Format::LaTeX => ".tex",
@@ -48,6 +48,10 @@ pub fn inject(
 				"type": config.school.type_name,
 				"level": config.school.level,
 			},
+			"branch": {
+				"filename": branch_filename,
+				"content": branch_content.unwrap_or_default()
+			}
 		}),
 	)?)
 }

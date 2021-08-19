@@ -98,6 +98,7 @@ fn create(branch: &Branch, config: &Config) -> Result<()> {
 				.join(conf::TemplateType::Branch.to_string())
 				.join(&branch.branch_template_path),
 		)?,
+		None,
 	)?;
 	success("Injected variables into template");
 	let path = Path::new("docs")
