@@ -16,6 +16,11 @@ pub fn inject(
 	template_string: String,
 ) -> Result<String> {
 	let now = Local::now();
+
+	// Getting ordinal numeral suffix (e.g. st or th)
+	let raw_ordinal = Ordinal(now.day()).to_string();
+	let ordinal_suffix = raw_ordinal.trim_start_matches(&now.day().to_string());
+
 	Ok(Handlebars::new().render_template(
 		&template_string,
 		&json!({
@@ -24,8 +29,8 @@ pub fn inject(
 				"day": now.day(),
 				"year": now.year(),
 				"date": match format {
-					Format::Markdown => now.format(&format!("%A, %B ^{}^, %Y", Ordinal(now.day()))).to_string(),
-					Format::LaTeX => now.format(&format!("%A, %B \\textsuperscript{{{}}}, %Y", Ordinal(now.day()))).to_string()
+					Format::Markdown => now.format(&format!("%A, %B %e^{}^, %Y", ordinal_suffix)).to_string(),
+					Format::LaTeX => now.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
 				}
 			},
 			"branch_filename": branch_filename,
