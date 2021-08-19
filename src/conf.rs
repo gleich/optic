@@ -84,7 +84,7 @@ pub fn list_templates(format: &Format, group: &TemplateType) -> Result<Vec<Strin
 			if file_name.ends_with("tex.hbs") && format == &Format::LaTeX {
 				file_names.push(file_name);
 			} else if file_name.ends_with("md.hbs") && format == &Format::Markdown {
-				file_names.push(file_name)
+				file_names.push(file_name);
 			}
 		}
 	}

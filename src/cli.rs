@@ -79,6 +79,16 @@ pub fn setup() -> Result<ArgMatches> {
 							&root_files.iter().map(|s| s as &str).collect::<Vec<&str>>(),
 						),
 				),
+		)
+		.subcommand(
+			App::new("build").about("Build a branch").arg(
+				Arg::new("path")
+					.about("Path to the file")
+					.value_name("PATH")
+					.default_value("Most recent branch to be updated")
+					.index(1)
+					.required(false),
+			),
 		);
 	if !Path::new(conf::FNAME).exists() {
 		app = app.subcommand(App::new("setup").about("Setup a kiwi project"));

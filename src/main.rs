@@ -13,5 +13,7 @@ fn main() {
 		cmds::setup::run(&prompt_theme);
 	} else if matches.is_present("new") {
 		cmds::new::run(&matches, &prompt_theme);
+	} else if matches.is_present("build") {
+		cmds::build::run(&matches)
 	}
 }

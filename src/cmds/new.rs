@@ -119,7 +119,7 @@ impl Steps<'_> {
 		let path = Path::new("docs")
 			.join(&branch.class)
 			.join(Month::from_u32(Local::now().month()).unwrap().name())
-			.join(&branch.doc_type.to_string().to_lowercase())
+			.join(&branch.doc_type.to_string())
 			.join(format!(
 				"{}.{}",
 				&branch.name,
