@@ -11,7 +11,7 @@ use crate::out::success;
 use crate::{conf, out};
 
 pub fn run(prompt_theme: &dyn Theme) {
-	clear_env().expect("Required binary check failed");
+	check_env().expect("Required binary check failed");
 	confirm(prompt_theme).expect("Failed to confirm setup with user");
 	let (toml, config) =
 		ask_config(prompt_theme).expect("Failed to ask some questions to generate a config file");
@@ -32,19 +32,17 @@ fn confirm(prompt_theme: &dyn Theme) -> Result<()> {
 }
 
 /// Make sure that the user has the required programs installed and everything is good to go
-fn clear_env() -> Result<()> {
+fn check_env() -> Result<()> {
 	let bins = ["git", "pandoc", "pdflatex"];
 	for binary in bins {
 		let path = which(binary).context(format!("Missing required binary: {}", binary))?;
 		success(&format!(
 			"Required binary {} installed at {}",
-			binary.underline(),
-			path.to_str().unwrap().underline()
+			binary.green().underline(),
+			path.to_str().unwrap().green().underline()
 		));
 	}
-	println!();
-
-	success("Environment cleared, initiating setup procedure.\n");
+	success("Environment checked, initiating setup procedure.\n");
 	Ok(())
 }
 
