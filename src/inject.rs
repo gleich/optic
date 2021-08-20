@@ -24,7 +24,10 @@ pub fn inject(
 
 	let mut reg = Handlebars::new();
 	reg.set_strict_mode(true);
-	reg.register_escape_fn(custom_escape);
+	reg.register_escape_fn(match format {
+		Format::Markdown => handlebars::no_escape,
+		Format::LaTeX => custom_escape,
+	});
 	Ok(reg.render_template(
 		&template_string,
 		&json!({
