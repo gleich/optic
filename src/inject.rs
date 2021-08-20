@@ -4,7 +4,7 @@ use handlebars::Handlebars;
 use ordinal::Ordinal;
 use serde_json::json;
 
-use crate::conf::{Config, Format};
+use crate::conf::{Config, DocType, Format};
 
 /// Inject a bunch of data into a template string using the handlebars template engine.
 pub fn inject(
@@ -12,6 +12,7 @@ pub fn inject(
 	root_filename: &str,
 	class_name: &str,
 	format: &Format,
+	doc_type: &DocType,
 	config: &Config,
 	template_string: String,
 	branch_content: Option<String>,
@@ -54,6 +55,7 @@ pub fn inject(
 				"filename": branch_filename,
 				"content": branch_content.unwrap_or_default()
 			},
+			"type": doc_type.to_string(),
 			"required_preamble": "\\def\\tightlist{}"
 		}),
 	).context("Handlebar template injection failed")?)

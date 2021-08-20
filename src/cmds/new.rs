@@ -92,6 +92,7 @@ fn create(branch: &Branch, config: &Config) -> Result<()> {
 		branch.root_template_path.to_str().unwrap(),
 		branch.class.as_str(),
 		&branch.format,
+		&branch.doc_type,
 		config,
 		fs::read_to_string(
 			Path::new("templates")

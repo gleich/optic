@@ -1,6 +1,7 @@
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::str::FromStr;
 use std::{env, fs};
 
 use anyhow::{bail, Context, Result};
@@ -10,13 +11,14 @@ use colored::Colorize;
 use num_traits::FromPrimitive;
 use walkdir::WalkDir;
 
-use crate::conf::{self, Format, TemplateType};
+use crate::conf::{self, DocType, Format, TemplateType};
 use crate::inject::inject;
 use crate::out::{success, ARROW_CHARACTERS};
 
 #[derive(Debug)]
 struct Branch {
 	pub format: Format,
+	pub doc_type: DocType,
 	pub name: String,
 	pub path: PathBuf,
 	pub created: NaiveDateTime,
@@ -44,6 +46,7 @@ pub fn run(matches: &ArgMatches) {
 		branch_data.root.file_name().unwrap().to_str().unwrap(),
 		&branch_data.class_name,
 		&Format::LaTeX,
+		&branch_data.doc_type,
 		&config,
 		fs::read_to_string(&branch_data.root).expect("Failed to read from root file"),
 		Some(match branch_data.format {
@@ -60,7 +63,7 @@ pub fn run(matches: &ArgMatches) {
 		&branch_data.name,
 		&branch_data.class_name,
 		&branch_data.created,
-		branch_path.parent().unwrap().file_name().unwrap(),
+		&branch_data.doc_type,
 	)
 	.expect("Failed to generate PDF file");
 }
@@ -131,6 +134,15 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 			"md" => Format::Markdown,
 			_ => Format::LaTeX,
 		},
+		doc_type: DocType::from_str(
+			branch_path
+				.parent()
+				.unwrap()
+				.file_name()
+				.unwrap()
+				.to_str()
+				.unwrap(),
+		)?,
 		path: branch_path.clone(),
 		created: NaiveDateTime::parse_from_str(
 			&format!(
@@ -175,7 +187,7 @@ fn generate_pdf(
 	doc_name: &str,
 	class_name: &str,
 	created_time: &NaiveDateTime,
-	doc_type_name: &OsStr,
+	doc_type: &DocType,
 ) -> Result<()> {
 	let build_dir = Path::new("build");
 	if build_dir.exists() {
@@ -210,7 +222,7 @@ fn generate_pdf(
 	let pdf_dir = Path::new("pdfs")
 		.join(class_name)
 		.join(Month::from_u32(created_time.month()).unwrap().name())
-		.join(doc_type_name);
+		.join(doc_type.to_string());
 	let pdf_fname = pdf_dir.join(format!("{}pdf", doc_name));
 	fs::create_dir_all(&pdf_dir).context("Failed to create PDF build directory")?;
 	fs::rename(Path::new(build_dir).join("build.pdf"), &pdf_fname)
