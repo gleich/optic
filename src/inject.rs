@@ -61,14 +61,22 @@ pub fn inject(
 	).context("Handlebar template injection failed")?)
 }
 
-fn custom_escape(s: &str) -> String {
-	let mut output = String::with_capacity(s.len());
+pub fn custom_escape(s: &str) -> String {
+	let mut output = String::new();
 	for c in s.chars() {
 		match c {
 			'&' => output.push_str("\\&"),
 			'$' => output.push_str("\\$"),
+			'#' => output.push_str("\\#"),
 			_ => output.push(c),
 		}
 	}
 	output
+}
+
+pub fn revert_escape(s: &str) -> String {
+	s.replace("\\&", "&")
+		.replace("\\$", "$")
+		.replace("\\#", "#")
+		.to_string()
 }
