@@ -14,8 +14,8 @@ pub fn setup() -> Result<ArgMatches> {
 	let classes: &Vec<String> = &config.classes.into_iter().map(|c| c.name).collect();
 
 	let default_format = config.default_format.to_string();
-	let root_files = conf::list_templates(&Format::LaTeX, &conf::TemplateType::Root)
-		.context("Failed to list root templates")?;
+	let root_files =
+		conf::list_templates(&Format::LaTeX, &conf::TemplateType::Root).unwrap_or_default();
 
 	let mut app = App::new("kiwi")
 		.version("1.0.0")
