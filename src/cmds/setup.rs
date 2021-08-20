@@ -22,7 +22,7 @@ pub fn run(prompt_theme: &dyn Theme) {
 fn confirm(prompt_theme: &dyn Theme) -> Result<()> {
 	let cwd = env::current_dir().context("Failed to get current directory")?;
 	if !Confirm::with_theme(prompt_theme)
-		.with_prompt(format!("Create kiwi project in {:?}?", &cwd))
+		.with_prompt(format!("Created kiwi project in {:?}?", &cwd))
 		.interact()
 		.context("Failed to confirm setup with user")?
 	{
