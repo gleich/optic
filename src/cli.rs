@@ -10,11 +10,12 @@ use crate::conf::{self, DocType, Format};
 use crate::out::got_value;
 
 pub fn setup() -> Result<ArgMatches> {
-	let config = conf::read(true)?;
+	let config = conf::read(true).context("Failed to read from configuration file")?;
 	let classes: &Vec<String> = &config.classes.into_iter().map(|c| c.name).collect();
 
 	let default_format = config.default_format.to_string();
-	let root_files = conf::list_templates(&Format::LaTeX, &conf::TemplateType::Root)?;
+	let root_files = conf::list_templates(&Format::LaTeX, &conf::TemplateType::Root)
+		.context("Failed to list root templates")?;
 
 	let mut app = App::new("kiwi")
 		.version("1.0.0")

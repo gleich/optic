@@ -68,7 +68,7 @@ pub fn read(default: bool) -> Result<Config> {
 		return Ok(Default::default());
 	}
 	let contents = fs::read_to_string(loc).context("Failed to read from configuration file")?;
-	Ok(toml::from_str(&contents)?)
+	Ok(toml::from_str(&contents).context("Failed to parse toml")?)
 }
 
 /// Get a list of all the template files for a certain template type
@@ -77,9 +77,14 @@ pub fn list_templates(format: &Format, group: &TemplateType) -> Result<Vec<Strin
 		.context("Failed to get templates")?;
 
 	let mut file_names = Vec::new();
-	for raw_fs_object in template_fs_objects {
-		let fs_object = raw_fs_object?;
-		if fs_object.file_type()?.is_file() {
+	for entry in template_fs_objects {
+		let fs_object =
+			entry.context("Failed to get file system object from read directory call")?;
+		if fs_object
+			.file_type()
+			.context("Failed to get file type")?
+			.is_file()
+		{
 			let file_name = fs_object.file_name().to_str().unwrap().to_string();
 			if file_name.ends_with("tex.hbs") && format == &Format::LaTeX {
 				file_names.push(file_name);

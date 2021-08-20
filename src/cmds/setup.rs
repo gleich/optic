@@ -125,16 +125,16 @@ fn create(toml: String, config: Config) -> Result<()> {
 
 	// Write to files
 	println!("\n--- Creating Everything ---");
-	fs::write("README.md", readme_template)?;
+	fs::write("README.md", readme_template).context("Failed to write to README.md file")?;
 	out::success("Created to README.md");
 
-	fs::write(conf::FNAME, toml)?;
+	fs::write(conf::FNAME, toml).context("Failed to write to configuration file (kiwi.toml)")?;
 	out::success(&format!(
 		"Created to kiwi configuration file ({})",
 		conf::FNAME
 	));
 
-	fs::write(".gitignore", files::GITIGNORE)?;
+	fs::write(".gitignore", files::GITIGNORE).context("Failed to write to git ignore file")?;
 	out::success("Created .gitignore");
 
 	// Run commands

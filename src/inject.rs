@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use chrono::{Datelike, Local};
 use handlebars::Handlebars;
 use ordinal::Ordinal;
@@ -53,5 +53,5 @@ pub fn inject(
 				"content": branch_content.unwrap_or_default()
 			}
 		}),
-	)?)
+	).context("Handlebar template injection failed")?)
 }

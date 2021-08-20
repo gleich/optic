@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use chrono::{Datelike, Local, Month};
 use clap::ArgMatches;
 use dialoguer::theme::Theme;
@@ -97,9 +97,11 @@ fn create(branch: &Branch, config: &Config) -> Result<()> {
 			Path::new("templates")
 				.join(conf::TemplateType::Branch.to_string())
 				.join(&branch.branch_template_path),
-		)?,
+		)
+		.context("Failed to read from branch template file")?,
 		None,
-	)?;
+	)
+	.context("Failed to inject variables into template file")?;
 	success("Injected variables into template");
 	let path = Path::new("docs")
 		.join(&branch.class)
@@ -113,11 +115,11 @@ fn create(branch: &Branch, config: &Config) -> Result<()> {
 				Format::Markdown => "md",
 			}
 		));
-	fs::create_dir_all(path.parent().unwrap())?;
+	fs::create_dir_all(path.parent().unwrap()).context("Failed to create directory")?;
 	if path.exists() {
 		bail!("{} already exists", &path.to_str().unwrap());
 	}
-	fs::write(&path, content)?;
+	fs::write(&path, content).context("Failed to write to file")?;
 	success(&format!("Created {}", &path.to_str().unwrap()));
 	Ok(())
 }

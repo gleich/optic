@@ -80,7 +80,14 @@ fn branch_to_build(matches: &ArgMatches) -> Result<PathBuf> {
 		if entry.file_type().is_file() && extension == OsStr::new("tex")
 			|| extension == OsStr::new("md")
 		{
-			let modtime = entry.metadata()?.modified()?.elapsed()?.as_secs();
+			let modtime = entry
+				.metadata()
+				.context("Failed to get metadata about file")?
+				.modified()
+				.context("Failed to get modification information about file")?
+				.elapsed()
+				.context("Failed to get elapsed time since modification")?
+				.as_secs();
 			if min_time.is_none() || file.is_none() || min_time.unwrap() > modtime {
 				min_time = Some(modtime);
 				file = Some(entry);
@@ -128,7 +135,7 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 			&format!(
 				"{} {}",
 				extract_variable("created", &lines)
-					.expect("Failed to extract \"created\" field from preamble"),
+					.context("Failed to extract \"created\" field from preamble")?,
 				"0:0:0"
 			),
 			"%F %H:%M:%S", // We must include an time of the day so we add 0:0:0 here manually
@@ -137,10 +144,10 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 			.join(TemplateType::Root.to_string())
 			.join(
 				extract_variable("root", &lines)
-					.expect("Failed to extract \"root\" field from preamble"),
+					.context("Failed to extract \"root\" field from preamble")?,
 			),
 		class_name: extract_variable("class", &lines)
-			.expect("Failed to extract \"class\" field from preamble"),
+			.context("Failed to extract \"class\" field from preamble")?,
 	};
 	success("Extracted data from branch");
 	Ok(branch)
@@ -156,9 +163,10 @@ fn convert_to_latex(branch_path: &PathBuf) -> Result<String> {
 		.arg("pdflatex")
 		.arg(branch_path.to_str().unwrap())
 		.stdout(Stdio::piped())
-		.output()?;
+		.output()
+		.context("Failed to run pandoc command")?;
 	success("Converted markdown to LaTeX");
-	Ok(String::from_utf8(output.stdout)?)
+	Ok(String::from_utf8(output.stdout).context("Failed to convert pandoc output to utf8")?)
 }
 
 fn generate_pdf(
@@ -170,21 +178,24 @@ fn generate_pdf(
 ) -> Result<()> {
 	let build_dir = Path::new("build");
 	if build_dir.exists() {
-		fs::remove_dir_all(build_dir)?;
+		fs::remove_dir_all(build_dir).context("Failed to initially delete build directory")?;
 	}
-	fs::create_dir(build_dir)?;
-	env::set_current_dir(build_dir)?;
+	fs::create_dir(build_dir).context("Failed to create build directory")?;
+	env::set_current_dir(build_dir)
+		.context("Failed to change directory into the build directory")?;
 
 	println!("{}", "\n  Building PDF".yellow());
 	let latex_fname = "build.tex";
-	fs::write(latex_fname, latex)?;
+	fs::write(latex_fname, latex).context("Failed to write to temporary build latex file")?;
 	let output = Command::new("pdflatex")
 		.arg(latex_fname)
 		.stdout(Stdio::piped())
-		.output()?;
+		.output()
+		.context("Failed to run pdflatex command to build latex document")?;
 	if !output.status.success() {
 		let failed_log_fname = "failure.log";
-		fs::write(failed_log_fname, output.stdout)?;
+		fs::write(failed_log_fname, output.stdout)
+			.context("Failed to write failure log to log file")?;
 		bail!(
 			"Failed to generate PDF. Please check {} in {}",
 			failed_log_fname,
@@ -192,7 +203,7 @@ fn generate_pdf(
 		);
 	}
 	success("Built PDF");
-	env::set_current_dir("..")?;
+	env::set_current_dir("..").context("Failed to leave build directory")?;
 
 	// Moving generated PDF to it's home
 	let pdf_dir = Path::new("pdfs")
@@ -200,7 +211,7 @@ fn generate_pdf(
 		.join(Month::from_u32(created_time.month()).unwrap().name())
 		.join(doc_type_name);
 	let pdf_fname = pdf_dir.join(format!("{}pdf", doc_name));
-	fs::create_dir_all(&pdf_dir)?;
+	fs::create_dir_all(&pdf_dir).context("Failed to create PDF build directory")?;
 	fs::rename(Path::new(build_dir).join("build.pdf"), &pdf_fname)
 		.context("Failed to move generated PDF from build directory to pdfs folder")?;
 	println!();
@@ -209,6 +220,6 @@ fn generate_pdf(
 		&pdf_fname.to_str().unwrap().green().bold().underline()
 	));
 
-	fs::remove_dir_all(build_dir)?;
+	fs::remove_dir_all(build_dir).context("Failed to remove temporary build directory")?;
 	Ok(())
 }
