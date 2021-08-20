@@ -4,7 +4,7 @@ use std::process::{Command, Stdio};
 use std::{env, fs};
 
 use anyhow::{bail, Context, Result};
-use chrono::{Datelike, Month, NaiveDateTime};
+use chrono::{Datelike, Local, Month, NaiveDateTime, TimeZone};
 use clap::ArgMatches;
 use colored::Colorize;
 use num_traits::FromPrimitive;
@@ -52,6 +52,7 @@ pub fn run(matches: &ArgMatches) {
 				convert_to_latex(&branch_path).expect("Failed to convert branch file to latex")
 			}
 		}),
+		Local.from_local_datetime(&branch_data.created).unwrap(),
 	)
 	.expect("Failed to inject variables into root file");
 	generate_pdf(

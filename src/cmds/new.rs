@@ -100,6 +100,7 @@ fn create(branch: &Branch, config: &Config) -> Result<()> {
 		)
 		.context("Failed to read from branch template file")?,
 		None,
+		Local::now(),
 	)
 	.context("Failed to inject variables into template file")?;
 	success("Injected variables into template");

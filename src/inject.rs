@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use chrono::{Datelike, Local};
+use chrono::{DateTime, Datelike, Local};
 use handlebars::Handlebars;
 use ordinal::Ordinal;
 use serde_json::json;
@@ -15,23 +15,22 @@ pub fn inject(
 	config: &Config,
 	template_string: String,
 	branch_content: Option<String>,
+	time: DateTime<Local>,
 ) -> Result<String> {
-	let now = Local::now();
-
 	// Getting ordinal numeral suffix (e.g. st or th)
-	let raw_ordinal = Ordinal(now.day()).to_string();
-	let ordinal_suffix = raw_ordinal.trim_start_matches(&now.day().to_string());
+	let raw_ordinal = Ordinal(time.day()).to_string();
+	let ordinal_suffix = raw_ordinal.trim_start_matches(&time.day().to_string());
 
 	Ok(Handlebars::new().render_template(
 		&template_string,
 		&json!({
 			"time": {
-				"simple_date": now.format("%F").to_string(),
-				"day": now.day(),
-				"year": now.year(),
+				"simple_date": time.format("%F").to_string(),
+				"day": time.day(),
+				"year": time.year(),
 				"date": match format {
-					Format::Markdown => now.format(&format!("%A, %B %e^{}^, %Y", ordinal_suffix)).to_string(),
-					Format::LaTeX => now.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
+					Format::Markdown => time.format(&format!("%A, %B %e^{}^, %Y", ordinal_suffix)).to_string(),
+					Format::LaTeX => time.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
 				}
 			},
 			"name": branch_filename.replace("_", " ").replace("-", " ").trim_end_matches(match format {
