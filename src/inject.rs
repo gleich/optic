@@ -24,7 +24,7 @@ pub fn inject(
 
 	let mut reg = Handlebars::new();
 	reg.set_strict_mode(true);
-	reg.register_escape_fn(handlebars::no_escape);
+	reg.register_escape_fn(custom_escape);
 	Ok(reg.render_template(
 		&template_string,
 		&json!({
@@ -59,4 +59,16 @@ pub fn inject(
 			"required_preamble": "\\def\\tightlist{}"
 		}),
 	).context("Handlebar template injection failed")?)
+}
+
+fn custom_escape(s: &str) -> String {
+	let mut output = String::with_capacity(s.len());
+	for c in s.chars() {
+		match c {
+			'&' => output.push_str("\\&"),
+			'$' => output.push_str("\\$"),
+			_ => output.push(c),
+		}
+	}
+	output
 }
