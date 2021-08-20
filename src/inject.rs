@@ -53,7 +53,8 @@ pub fn inject(
 			"branch": {
 				"filename": branch_filename,
 				"content": branch_content.unwrap_or_default()
-			}
+			},
+			"required_preamble": "\\def\\tightlist{}"
 		}),
 	).context("Handlebar template injection failed")?)
 }
