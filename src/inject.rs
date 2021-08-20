@@ -37,10 +37,7 @@ pub fn inject(
 					Format::LaTeX => time.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
 				}
 			},
-			"name": branch_filename.replace("_", " ").replace("-", " ").trim_end_matches(match format {
-					Format::Markdown => ".md",
-					Format::LaTeX => ".tex",
-				}),
+			"name": branch_filename.replace("_", " ").replace("-", " ").trim_end_matches(".md").trim_end_matches(".tex"),
 			"root_filename": root_filename,
 			"author": config.name,
 			"class": {
