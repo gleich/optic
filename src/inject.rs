@@ -21,7 +21,10 @@ pub fn inject(
 	let raw_ordinal = Ordinal(time.day()).to_string();
 	let ordinal_suffix = raw_ordinal.trim_start_matches(&time.day().to_string());
 
-	Ok(Handlebars::new().render_template(
+	let mut reg = Handlebars::new();
+	reg.set_strict_mode(true);
+	reg.register_escape_fn(handlebars::no_escape);
+	Ok(reg.render_template(
 		&template_string,
 		&json!({
 			"time": {

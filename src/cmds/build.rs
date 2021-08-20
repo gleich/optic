@@ -111,12 +111,7 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 			let trimmed_line = line.trim();
 			let prefix = format!("{} {} ", name, ARROW_CHARACTERS);
 			if trimmed_line.starts_with(&prefix) {
-				return Some(
-					trimmed_line
-						.trim_start_matches(&prefix)
-						.to_string()
-						.replace("&amp;", "&"),
-				);
+				return Some(trimmed_line.trim_start_matches(&prefix).to_string());
 			}
 		}
 		None
