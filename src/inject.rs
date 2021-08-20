@@ -24,10 +24,7 @@ pub fn inject(
 
 	let mut reg = Handlebars::new();
 	reg.set_strict_mode(true);
-	reg.register_escape_fn(match format {
-		Format::Markdown => handlebars::no_escape,
-		Format::LaTeX => custom_escape,
-	});
+	reg.register_escape_fn(handlebars::no_escape);
 	Ok(reg.render_template(
 		&template_string,
 		&json!({
@@ -40,11 +37,11 @@ pub fn inject(
 					Format::LaTeX => time.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
 				}
 			},
-			"name": branch_filename.replace("_", " ").replace("-", " ").trim_end_matches(".md").trim_end_matches(".tex"),
+			"name": custom_escape(branch_filename.replace("_", " ").replace("-", " ").trim_end_matches(".md").trim_end_matches(".tex")),
 			"root_filename": root_filename,
 			"author": config.name,
 			"class": {
-				"name": class_name,
+				"name": custom_escape(class_name),
 				"teacher": config.classes.iter().find(|c| c.name == class_name).unwrap().teacher,
 			},
 			"school": {
@@ -76,11 +73,4 @@ pub fn custom_escape(s: &str) -> String {
 		}
 	}
 	output
-}
-
-pub fn revert_escape(s: &str) -> String {
-	s.replace("\\&", "&")
-		.replace("\\$", "$")
-		.replace("\\#", "#")
-		.to_string()
 }
