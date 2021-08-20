@@ -63,7 +63,11 @@ pub fn inject(
 
 pub fn custom_escape(s: &str) -> String {
 	let mut output = String::new();
-	for c in s.chars() {
+	for (i, c) in s.chars().enumerate() {
+		if s.chars().nth(i - 1).unwrap_or_default().to_string() == "\\".to_string() {
+			output.push(c);
+			continue;
+		}
 		match c {
 			'&' => output.push_str("\\&"),
 			'$' => output.push_str("\\$"),
