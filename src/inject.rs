@@ -37,11 +37,11 @@ pub fn inject(
 					Format::LaTeX => time.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
 				}
 			},
-			"name": custom_escape(branch_filename.replace("_", " ").replace("-", " ").trim_end_matches(".md").trim_end_matches(".tex")),
+			"name": custom_escape(branch_filename.replace("_", " ").replace("-", " ").trim_end_matches(".md").trim_end_matches(".tex"), format),
 			"root_filename": root_filename,
 			"author": config.name,
 			"class": {
-				"name": custom_escape(class_name),
+				"name": custom_escape(class_name, format),
 				"teacher": config.classes.iter().find(|c| c.name == class_name).unwrap().teacher,
 			},
 			"school": {
@@ -53,12 +53,15 @@ pub fn inject(
 				"content": branch_content.unwrap_or_default()
 			},
 			"type": doc_type.to_string(),
-			"required_preamble": "\\def\\tightlist{}"
+			"required_preamble": "\\def\\tightlist{}\n\\usepackage[normalem]{ulem}"
 		}),
 	).context("Handlebar template injection failed")?)
 }
 
-pub fn custom_escape(s: &str) -> String {
+pub fn custom_escape(s: &str, format: &Format) -> String {
+	if format == &Format::Markdown {
+		return s.to_string();
+	}
 	let mut output = String::new();
 	for (i, c) in s.chars().enumerate() {
 		if s.chars().nth(i - 1).unwrap_or_default().to_string() == "\\".to_string() {

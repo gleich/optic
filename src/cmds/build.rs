@@ -12,7 +12,7 @@ use num_traits::FromPrimitive;
 use walkdir::WalkDir;
 
 use crate::conf::{self, DocType, Format, TemplateType};
-use crate::inject::{self, inject};
+use crate::inject::inject;
 use crate::out::{success, ARROW_CHARACTERS};
 
 #[derive(Debug)]
