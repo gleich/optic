@@ -13,10 +13,17 @@ pub const TEMPLATES_DIR: &str = "templates";
 pub struct Config {
 	pub name: String,
 	pub school: School,
+	pub open_with: Option<Open>,
 	#[serde(skip_serializing)]
 	#[serde(default)]
 	pub default_format: Format,
 	pub classes: Vec<Class>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Open {
+	pub command: String,
+	pub args: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -1,11 +1,14 @@
 use std::fs;
+use std::io::{Stdin, Stdout};
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::str::FromStr;
 
 use anyhow::{bail, Context, Result};
 use chrono::{Datelike, Local, Month};
 use clap::ArgMatches;
 use dialoguer::theme::Theme;
+use duct::cmd;
 use num_traits::FromPrimitive;
 use strum::VariantNames;
 
@@ -123,5 +126,20 @@ fn create(branch: &Branch, config: &Config) -> Result<()> {
 	}
 	fs::write(&path, content).context("Failed to write to file")?;
 	success(&format!("Created {}", &path.to_str().unwrap()));
+
+	if config.open_with.is_some() {
+		let open_with = config.open_with.as_ref().unwrap();
+		let mut args = open_with.args.clone().unwrap_or_default(); // Clone only used here because of default trait bound issues
+		args.push(path.to_str().unwrap().to_string());
+		cmd(&open_with.command, args)
+			.run()
+			.context("Failed to run open with command")?;
+		success(&format!(
+			"Opened {} with {}",
+			&path.file_name().unwrap().to_str().unwrap(),
+			open_with.command
+		));
+	}
+
 	Ok(())
 }
