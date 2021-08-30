@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+use std::path::PathBuf;
 use std::{env, fs, process};
 
 use anyhow::{Context, Result};
@@ -121,19 +123,27 @@ fn create(toml: String, config: Config) -> Result<()> {
 		config.school.level, config.school.type_name
 	);
 
-	// Write to files
 	println!("\n--- Creating Everything ---");
-	fs::write("README.md", readme_template).context("Failed to write to README.md file")?;
-	out::success("Created to README.md");
+	// Write to folders
+	fs::create_dir_all("templates/root")?;
+	fs::create_dir_all("templates/branch")?;
 
-	fs::write(conf::FNAME, toml).context("Failed to write to configuration file (kiwi.toml)")?;
-	out::success(&format!(
-		"Created to kiwi configuration file ({})",
-		conf::FNAME
-	));
-
-	fs::write(".gitignore", files::GITIGNORE).context("Failed to write to git ignore file")?;
-	out::success("Created .gitignore");
+	// Write to files
+	let mut files: HashMap<&str, &str> = HashMap::new();
+	files.insert("README.md", &readme_template);
+	files.insert(conf::FNAME, &toml);
+	files.insert(".gitignore", files::GITIGNORE);
+	files.insert("templates/branch/default.md.hbs", files::MD_BRANCH_TEMPLATE);
+	files.insert(
+		"templates/branch/default.tex.hbs",
+		files::TEX_BRANCH_TEMPLATE,
+	);
+	files.insert("templates/root/default.tex.hbs", files::ROOT_TEMPLATE);
+	for (path, content) in files.iter() {
+		fs::write(PathBuf::from(&path), content)
+			.context(format!("Failed to write to {}.", &path))?;
+		out::success(&format!("Created {}", path));
+	}
 
 	// Run commands
 	println!();
@@ -288,5 +298,26 @@ sympy-plots-for-*.tex/
 
 # LaTeX formatter temp file
 __latexindent_temp.tex
+";
+
+	pub const MD_BRANCH_TEMPLATE: &str = "<!--
+created > {{time.simple_date}}
+   root > {{root_filename}}
+-->
+";
+	pub const TEX_BRANCH_TEMPLATE: &str = "\\iffalse
+created > {{time.simple_date}}
+   root > {{root_filename}}
+\\fi
+";
+	pub const ROOT_TEMPLATE: &str = "\\documentclass{report}
+\\title{ {{name}} }
+\\author{ {{author}} }
+\\date{ {{time.date}} }
+
+\\begin{document}
+	\\maketitle
+	{{branch.content}}
+\\end{document}
 ";
 }

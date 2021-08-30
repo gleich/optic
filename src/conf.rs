@@ -13,6 +13,7 @@ pub const TEMPLATES_DIR: &str = "templates";
 pub struct Config {
 	pub name: String,
 	pub school: School,
+	#[serde(skip_serializing)]
 	#[serde(default = "default_delimiter")]
 	pub delimiter: String,
 	pub open_with: Option<Open>,
@@ -24,6 +25,9 @@ pub struct Config {
 
 // Defaults
 fn default_delimiter() -> String { String::from(">") }
+impl Default for Format {
+	fn default() -> Self { Format::Markdown }
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Open {
@@ -64,12 +68,10 @@ pub enum Format {
 /// Types of templates that the user can write
 #[derive(EnumVariantNames, ToString, PartialEq, Debug, EnumString)]
 pub enum TemplateType {
+	#[strum(serialize = "root")]
 	Root,
+	#[strum(serialize = "branch")]
 	Branch,
-}
-
-impl Default for Format {
-	fn default() -> Self { Format::Markdown }
 }
 
 /// Read from the config file.
