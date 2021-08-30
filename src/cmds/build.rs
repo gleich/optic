@@ -175,8 +175,18 @@ fn extract_branch_data(config: &Config, content: &str, branch_path: &PathBuf) ->
 				extract_variable(&config, "root", &lines, &format)
 					.context("Failed to extract \"root\" field from preamble")?,
 			),
-		class_name: extract_variable(&config, "class", &lines, &format)
-			.context("Failed to extract \"class\" field from preamble")?,
+		class_name: branch_path
+			.parent()
+			.context("Failed to get first parent folder for class")?
+			.parent()
+			.context("Failed to get second parent folder for class")?
+			.parent()
+			.context("Failed to get third parent folder for class")?
+			.file_name()
+			.unwrap()
+			.to_str()
+			.unwrap()
+			.to_string(),
 		format,
 	};
 	success("Extracted data from branch");
