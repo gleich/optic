@@ -3,7 +3,7 @@ use console::{style, Style};
 use dialoguer::theme::ColorfulTheme;
 
 const CHECK_CHARACTER: &str = "✔";
-pub const ARROW_CHARACTERS: &str = "―→";
+pub const ARROW_CHARACTERS: &str = ">";
 
 pub fn custom_dialoguer_theme() -> ColorfulTheme {
 	let green_check = CHECK_CHARACTER.green();

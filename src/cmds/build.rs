@@ -109,19 +109,34 @@ fn branch_to_build(matches: &ArgMatches) -> Result<PathBuf> {
 fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 	/// Extract variable value. Example:
 	/// "2021-08-18" from "create ―→ 2021-08-18"
-	fn extract_variable(name: &str, lines: &Vec<&str>) -> Option<String> {
+	fn extract_variable(name: &str, lines: &Vec<&str>, format: &Format) -> Option<String> {
+		let mut inside_meta_section = false;
 		for line in lines {
 			let trimmed_line = line.trim();
+			if format == &Format::Markdown && trimmed_line.starts_with("<!--")
+				|| format == &Format::LaTeX && trimmed_line.starts_with("\\iffalse")
+			{
+				inside_meta_section = true;
+			}
 			let prefix = format!("{} {} ", name, ARROW_CHARACTERS);
-			if trimmed_line.starts_with(&prefix) {
+			if trimmed_line.starts_with(&prefix) && inside_meta_section {
 				return Some(trimmed_line.trim_start_matches(&prefix).to_string());
+			}
+			if format == &Format::Markdown && trimmed_line.starts_with("-->")
+				|| format == &Format::LaTeX && trimmed_line.starts_with("\\fi")
+			{
+				return None;
 			}
 		}
 		None
 	}
 
-	let lines: Vec<&str> = content.split("\n").collect();
 	let branch_extension = branch_path.extension().unwrap().to_str().unwrap();
+	let format = match branch_extension {
+		"md" => Format::Markdown,
+		_ => Format::LaTeX,
+	};
+	let lines: Vec<&str> = content.split("\n").collect();
 	let branch = Branch {
 		name: branch_path
 			.file_name()
@@ -130,10 +145,6 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 			.unwrap()
 			.trim_end_matches(branch_extension)
 			.to_string(),
-		format: match branch_extension {
-			"md" => Format::Markdown,
-			_ => Format::LaTeX,
-		},
 		doc_type: DocType::from_str(
 			branch_path
 				.parent()
@@ -147,7 +158,7 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 		created: NaiveDateTime::parse_from_str(
 			&format!(
 				"{} {}",
-				extract_variable("created", &lines)
+				extract_variable("created", &lines, &format)
 					.context("Failed to extract \"created\" field from preamble")?,
 				"0:0:0"
 			),
@@ -156,11 +167,12 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 		root: Path::new("templates")
 			.join(TemplateType::Root.to_string())
 			.join(
-				extract_variable("root", &lines)
+				extract_variable("root", &lines, &format)
 					.context("Failed to extract \"root\" field from preamble")?,
 			),
-		class_name: extract_variable("class", &lines)
+		class_name: extract_variable("class", &lines, &format)
 			.context("Failed to extract \"class\" field from preamble")?,
+		format,
 	};
 	success("Extracted data from branch");
 	Ok(branch)

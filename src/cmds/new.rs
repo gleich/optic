@@ -1,7 +1,5 @@
 use std::fs;
-use std::io::{Stdin, Stdout};
 use std::path::{Path, PathBuf};
-use std::process::Command;
 use std::str::FromStr;
 
 use anyhow::{bail, Context, Result};
