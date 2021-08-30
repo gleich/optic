@@ -11,9 +11,9 @@ use colored::Colorize;
 use num_traits::FromPrimitive;
 use walkdir::WalkDir;
 
-use crate::conf::{self, DocType, Format, TemplateType};
+use crate::conf::{self, Config, DocType, Format, TemplateType};
 use crate::inject::inject;
-use crate::out::{success, ARROW_CHARACTERS};
+use crate::out::success;
 
 #[derive(Debug)]
 struct Branch {
@@ -33,7 +33,7 @@ pub fn run(matches: &ArgMatches) {
 		branch_to_build(subcommand_matches).expect("Failed to get what file should be built");
 	let branch_contents =
 		fs::read_to_string(&branch_path).expect("Failed to read from branch file");
-	let branch_data = extract_branch_data(&branch_contents, &branch_path)
+	let branch_data = extract_branch_data(&config, &branch_contents, &branch_path)
 		.expect("Failed to extract data from branch file");
 	let latex = inject(
 		branch_data
@@ -106,10 +106,15 @@ fn branch_to_build(matches: &ArgMatches) -> Result<PathBuf> {
 	Ok(path)
 }
 
-fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
+fn extract_branch_data(config: &Config, content: &str, branch_path: &PathBuf) -> Result<Branch> {
 	/// Extract variable value. Example:
 	/// "2021-08-18" from "create ―→ 2021-08-18"
-	fn extract_variable(name: &str, lines: &Vec<&str>, format: &Format) -> Option<String> {
+	fn extract_variable(
+		config: &Config,
+		name: &str,
+		lines: &Vec<&str>,
+		format: &Format,
+	) -> Option<String> {
 		let mut inside_meta_section = false;
 		for line in lines {
 			let trimmed_line = line.trim();
@@ -118,7 +123,7 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 			{
 				inside_meta_section = true;
 			}
-			let prefix = format!("{} {} ", name, ARROW_CHARACTERS);
+			let prefix = format!("{} {} ", name, config.delimiter);
 			if trimmed_line.starts_with(&prefix) && inside_meta_section {
 				return Some(trimmed_line.trim_start_matches(&prefix).to_string());
 			}
@@ -158,7 +163,7 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 		created: NaiveDateTime::parse_from_str(
 			&format!(
 				"{} {}",
-				extract_variable("created", &lines, &format)
+				extract_variable(&config, "created", &lines, &format)
 					.context("Failed to extract \"created\" field from preamble")?,
 				"0:0:0"
 			),
@@ -167,10 +172,10 @@ fn extract_branch_data(content: &str, branch_path: &PathBuf) -> Result<Branch> {
 		root: Path::new("templates")
 			.join(TemplateType::Root.to_string())
 			.join(
-				extract_variable("root", &lines, &format)
+				extract_variable(&config, "root", &lines, &format)
 					.context("Failed to extract \"root\" field from preamble")?,
 			),
-		class_name: extract_variable("class", &lines, &format)
+		class_name: extract_variable(&config, "class", &lines, &format)
 			.context("Failed to extract \"class\" field from preamble")?,
 		format,
 	};
