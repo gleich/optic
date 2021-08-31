@@ -298,6 +298,9 @@ sympy-plots-for-*.tex/
 
 # LaTeX formatter temp file
 __latexindent_temp.tex
+
+# kiwi build directory
+/build/
 ";
 
 	pub const MD_BRANCH_TEMPLATE: &str = "<!--
