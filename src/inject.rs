@@ -53,7 +53,59 @@ pub fn inject(
 				"content": branch_content.unwrap_or_default()
 			},
 			"type": doc_type.to_string(),
-			"required_preamble": "\\def\\tightlist{}\n\\usepackage[normalem]{ulem}"
+			"required_preamble": "
+% PANDOC STUFF:
+\\usepackage{iftex}
+\\ifPDFTeX
+  \\usepackage[T1]{fontenc}
+  \\usepackage[utf8]{inputenc}
+  \\usepackage{textcomp} % provide euro and other symbols
+\\else % if luatex or xetex
+  \\usepackage{unicode-math}
+  \\defaultfontfeatures{Scale=MatchLowercase}
+  \\defaultfontfeatures[\\rmfamily]{Ligatures=TeX,Scale=1}
+\\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\\IfFileExists{upquote.sty}{\\usepackage{upquote}}{}
+\\IfFileExists{microtype.sty}{% use microtype if available
+  \\usepackage[]{microtype}
+  \\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\\makeatletter
+\\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \\IfFileExists{parskip.sty}{%
+    \\usepackage{parskip}
+  }{% else
+    \\setlength{\\parindent}{0pt}
+    \\setlength{\\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \\KOMAoptions{parskip=half}}
+\\makeatother
+\\usepackage{xcolor}
+\\IfFileExists{xurl.sty}{\\usepackage{xurl}}{} % add URL line breaks if available
+\\IfFileExists{bookmark.sty}{\\usepackage{bookmark}}{\\usepackage{hyperref}}
+\\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\\urlstyle{same} % disable monospaced font for URLs
+\\usepackage{longtable,booktabs,array}
+\\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \\paragraph or \\subparagraph
+\\usepackage{etoolbox}
+\\makeatletter
+\\patchcmd\\longtable{\\par}{\\if@noskipsec\\mbox{}\\fi\\par}{}{}
+\\makeatother
+% Allow footnotes in longtable head/foot
+\\IfFileExists{footnotehyper.sty}{\\usepackage{footnotehyper}}{\\usepackage{footnote}}
+\\makesavenoteenv{longtable}
+\\setlength{\\emergencystretch}{3em} % prevent overfull lines
+\\providecommand{\\tightlist}{%
+  \\setlength{\\itemsep}{0pt}\\setlength{\\parskip}{0pt}}
+\\setcounter{secnumdepth}{-\\maxdimen} % remove section numbering
+\\ifLuaTeX
+  \\usepackage{selnolig}  % disable illegal ligatures
+\\fi
+"
 		}),
 	).context("Handlebar template injection failed")?)
 }
