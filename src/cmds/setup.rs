@@ -318,6 +318,8 @@ created > {{time.simple_date}}
 \\author{ {{author}} }
 \\date{ {{time.date}} }
 
+{{required_preamble}}
+
 \\begin{document}
 	\\maketitle
 	{{branch.content}}
