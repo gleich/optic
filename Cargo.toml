@@ -1,5 +1,5 @@
 [package]
-name = "kiwi"
+name = "kiwi-cli"
 version = "0.1.0"
 description = "🏫 Schoolwork as code"
 authors = ["Matt Gleich <email@mattglei.ch>"]
@@ -27,3 +27,7 @@ which = "4.2.2"
 console = "0.14.1"
 walkdir = "2"
 duct = "0.13.5"
+
+[[bin]]
+name = "kiwi"
+path = "src/main.rs"
