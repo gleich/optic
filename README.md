@@ -2,11 +2,11 @@
 
 # kiwi
 
-⚠️ Kiwi is under active development and documentation is **not** done. ⚠️
-
 [![lint](https://github.com/gleich/kiwi/actions/workflows/lint.yml/badge.svg)](https://github.com/gleich/kiwi/actions/workflows/lint.yml)
 [![build](https://github.com/gleich/kiwi/actions/workflows/build.yml/badge.svg)](https://github.com/gleich/kiwi/actions/workflows/build.yml)
 [![test](https://github.com/gleich/kiwi/actions/workflows/test.yml/badge.svg)](https://github.com/gleich/kiwi/actions/workflows/test.yml)
+
+See the documentation over at [kiwi.docs.mattglei.ch](https://kiwi.docs.mattglei.ch)
 
 ## 🙌 Contributing
 

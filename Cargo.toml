@@ -1,11 +1,11 @@
 [package]
 name = "kiwi-cli"
-version = "0.1.0"
+version = "1.0.0"
 description = "🏫 Schoolwork as code"
 authors = ["Matt Gleich <email@mattglei.ch>"]
 edition = "2018"
 repository = "https://github.com/gleich/kiwi/"
-homepage = "https://github.com/gleich/kiwi/"
+homepage = "https://kiwi.docs.mattglei.ch"
 license = "MPL-2.0"
 keywords = ["kiwi", "cli", "latex", "markdown"]
 
