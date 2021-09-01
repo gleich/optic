@@ -7,7 +7,7 @@ edition = "2018"
 repository = "https://github.com/gleich/kiwi/"
 homepage = "https://github.com/gleich/kiwi/"
 license = "MPL-2.0"
-keywords = []
+keywords = ["kiwi", "cli", "latex", "markdown"]
 
 [dependencies]
 clap = "=3.0.0-beta.2"
