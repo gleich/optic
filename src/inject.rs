@@ -54,7 +54,7 @@ pub fn inject(
 			},
 			"type": doc_type.to_string(),
 			"required_preamble": "
-% PANDOC STUFF:
+% PANDOC PREAMBLE:
 \\usepackage{iftex}
 \\usepackage{graphicx}
 \\ifPDFTeX
@@ -125,6 +125,7 @@ pub fn custom_escape(s: &str, format: &Format) -> String {
 			'&' => output.push_str("\\&"),
 			'$' => output.push_str("\\$"),
 			'#' => output.push_str("\\#"),
+			'%' => output.push_str("\\%"),
 			_ => output.push(c),
 		}
 	}
