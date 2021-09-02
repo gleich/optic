@@ -56,6 +56,7 @@ pub fn inject(
 			"required_preamble": "
 % PANDOC STUFF:
 \\usepackage{iftex}
+\\usepackage{graphicx}
 \\ifPDFTeX
   \\usepackage[T1]{fontenc}
   \\usepackage[utf8]{inputenc}
