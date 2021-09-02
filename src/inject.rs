@@ -35,7 +35,8 @@ pub fn inject(
 				"date": match format {
 					Format::Markdown => time.format(&format!("%A, %B %e^{}^, %Y", ordinal_suffix)).to_string(),
 					Format::LaTeX => time.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
-				}
+				},
+				"month": time.format("%B").to_string(),
 			},
 			"name": custom_escape(branch_filename.replace("_", " ").replace("-", " ").trim_end_matches(".md").trim_end_matches(".tex"), format),
 			"root_filename": root_filename,
