@@ -20,7 +20,7 @@ pub fn get_all() -> Result<Vec<Branch>> {
 			.to_str()
 			.unwrap()
 			.to_string();
-		if entry.file_type().is_file() && extension == String::from("text")
+		if entry.file_type().is_file() && extension == String::from("tex")
 			|| extension == String::from("md")
 		{
 			extension = format!(".{}", extension);
