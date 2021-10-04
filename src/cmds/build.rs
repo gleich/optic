@@ -1,4 +1,3 @@
-use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::str::FromStr;
@@ -9,8 +8,8 @@ use chrono::{Datelike, Local, Month, NaiveDateTime, TimeZone};
 use clap::ArgMatches;
 use colored::Colorize;
 use num_traits::FromPrimitive;
-use walkdir::WalkDir;
 
+use crate::branches;
 use crate::conf::{self, Config, DocType, Format, TemplateType};
 use crate::inject::inject;
 use crate::out::success;
@@ -78,27 +77,22 @@ fn branch_to_build(matches: &ArgMatches) -> Result<PathBuf> {
 	// Find and return file that was most recently updated
 	let mut min_time = None;
 	let mut file = None;
-	for entry in WalkDir::new("docs") {
-		let entry = entry?;
-		let extension = entry.path().extension().unwrap_or_default();
-		if entry.file_type().is_file() && extension == OsStr::new("tex")
-			|| extension == OsStr::new("md")
-		{
-			let modtime = entry
-				.metadata()
-				.context("Failed to get metadata about file")?
-				.modified()
-				.context("Failed to get modification information about file")?
-				.elapsed()
-				.context("Failed to get elapsed time since modification")?
-				.as_secs();
-			if min_time.is_none() || file.is_none() || min_time.unwrap() > modtime {
-				min_time = Some(modtime);
-				file = Some(entry);
-			}
+	for branch in branches::get_all()? {
+		let modtime = branch
+			.path
+			.metadata()
+			.context("Failed to get metadata about file")?
+			.modified()
+			.context("Failed to get modification information about file")?
+			.elapsed()
+			.context("Failed to get elapsed time since modification")?
+			.as_secs();
+		if min_time.is_none() || file.is_none() || min_time.unwrap() > modtime {
+			min_time = Some(modtime);
+			file = Some(branch.path);
 		}
 	}
-	let path = file.unwrap().path().to_path_buf();
+	let path = file.unwrap().to_path_buf();
 	success(&format!(
 		"Building {}",
 		&path.to_str().unwrap().green().underline().bold()

@@ -1,6 +1,7 @@
 use cmds::{build, new, setup};
 use out::custom_dialoguer_theme;
 
+mod branches;
 mod cli;
 mod cmds;
 mod conf;
@@ -16,5 +17,6 @@ fn main() {
 		new::run(&matches, &prompt_theme);
 	} else if matches.is_present("build") {
 		build::run(&matches)
+	} else if matches.is_present("test") {
 	}
 }
