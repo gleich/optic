@@ -70,6 +70,7 @@ fn ask_config(prompt_theme: &dyn Theme) -> Result<(String, Config)> {
 				.with_prompt("Teacher's Name")
 				.interact()
 				.context("Failed to ask the name of the teacher")?,
+			active: true,
 		});
 		println!("");
 	}

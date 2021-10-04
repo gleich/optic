@@ -25,6 +25,7 @@ pub struct Config {
 
 // Defaults
 fn default_delimiter() -> String { String::from(">") }
+fn default_active() -> bool { true }
 impl Default for Format {
 	fn default() -> Self { Format::Markdown }
 }
@@ -39,6 +40,8 @@ pub struct Open {
 pub struct Class {
 	pub name: String,
 	pub teacher: String,
+	#[serde(default = "default_active", skip_serializing)]
+	pub active: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]

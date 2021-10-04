@@ -48,7 +48,12 @@ fn ask(matches: &ArgMatches, config: &Config, prompt_theme: &dyn Theme) -> Resul
 			prompt_theme,
 			"class",
 			"Class",
-			config.classes.iter().map(|c| c.name.as_str()).collect(),
+			config
+				.classes
+				.iter()
+				.filter(|c| c.active)
+				.map(|c| c.name.as_str())
+				.collect(),
 		)?,
 		doc_type: conf::DocType::from_str(&cli::flag_or_select(
 			matches,
