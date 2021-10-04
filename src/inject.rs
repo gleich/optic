@@ -74,14 +74,6 @@ pub fn inject(
   \\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
 \\makeatletter
-\\@ifundefined{KOMAClassName}{% if non-KOMA class
-  \\IfFileExists{parskip.sty}{%
-    \\usepackage{parskip}
-  }{% else
-    \\setlength{\\parindent}{0pt}
-    \\setlength{\\parskip}{6pt plus 2pt minus 1pt}}
-}{% if KOMA class
-  \\KOMAoptions{parskip=half}}
 \\makeatother
 \\usepackage{xcolor}
 \\IfFileExists{xurl.sty}{\\usepackage{xurl}}{} % add URL line breaks if available
