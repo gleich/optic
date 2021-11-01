@@ -159,9 +159,9 @@ fn extract_branch_data(config: &Config, content: &str, branch_path: &PathBuf) ->
 				"{} {}",
 				extract_variable(&config, "created", &lines, &format)
 					.context("Failed to extract \"created\" field from preamble")?,
-				"0:0:0"
+				"0:0:0" // We must include an time of the day so we add 0:0:0 here manually
 			),
-			"%F %H:%M:%S", // We must include an time of the day so we add 0:0:0 here manually
+			"%F %H:%M:%S",
 		)?,
 		root: Path::new("templates")
 			.join(TemplateType::Root.to_string())

@@ -46,7 +46,7 @@ pub fn get_all() -> Result<Vec<Branch>> {
 						.to_str()
 						.unwrap()
 						.strip_suffix(extension.as_str())
-						.unwrap(),
+						.unwrap_or_default(),
 				);
 			branches.push(Branch {
 				path: path.to_path_buf(),
