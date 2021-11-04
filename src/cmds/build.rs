@@ -30,10 +30,14 @@ pub fn run(matches: &ArgMatches) {
 	let config = conf::read(false).expect("Failed to read from the configuration file");
 	let branch_path =
 		branch_to_build(subcommand_matches).expect("Failed to get what file should be built");
+	build(&config, &branch_path).expect("Failed to build branch");
+}
+
+pub fn build(config: &Config, branch_path: &PathBuf) -> Result<()> {
 	let branch_contents =
 		fs::read_to_string(&branch_path).expect("Failed to read from branch file");
 	let branch_data = extract_branch_data(&config, &branch_contents, &branch_path)
-		.expect("Failed to extract data from branch file");
+		.context("Failed to extract data from branch file")?;
 	let latex = inject(
 		branch_data
 			.path
@@ -47,16 +51,16 @@ pub fn run(matches: &ArgMatches) {
 		&Format::LaTeX,
 		&branch_data.doc_type,
 		&config,
-		fs::read_to_string(&branch_data.root).expect("Failed to read from root file"),
+		fs::read_to_string(&branch_data.root).context("Failed to read from root file")?,
 		Some(match branch_data.format {
 			Format::LaTeX => branch_contents,
 			Format::Markdown => {
-				convert_to_latex(&branch_path).expect("Failed to convert branch file to latex")
+				convert_to_latex(&branch_path).context("Failed to convert branch file to latex")?
 			}
 		}),
 		Local.from_local_datetime(&branch_data.created).unwrap(),
 	)
-	.expect("Failed to inject variables into root file");
+	.context("Failed to inject variables into root file")?;
 	generate_pdf(
 		&latex,
 		&branch_data.name,
@@ -64,7 +68,8 @@ pub fn run(matches: &ArgMatches) {
 		&branch_data.created,
 		&branch_data.doc_type,
 	)
-	.expect("Failed to generate PDF file");
+	.context("Failed to generate PDF file")?;
+	Ok(())
 }
 
 /// Get the file that should be built
@@ -218,7 +223,7 @@ fn generate_pdf(
 	env::set_current_dir(build_dir)
 		.context("Failed to change directory into the build directory")?;
 
-	println!("{}", "\n  Building PDF".yellow());
+	println!("{}", "  Building PDF".yellow());
 	let latex_fname = "build.tex";
 	fs::write(latex_fname, latex).context("Failed to write to temporary build latex file")?;
 	let output = Command::new("pdflatex")
@@ -248,7 +253,6 @@ fn generate_pdf(
 	fs::create_dir_all(&pdf_dir).context("Failed to create PDF build directory")?;
 	fs::rename(Path::new(build_dir).join("build.pdf"), &pdf_fname)
 		.context("Failed to move generated PDF from build directory to pdfs folder")?;
-	println!();
 	success(&format!(
 		"Created PDF file: {}",
 		&pdf_fname.to_str().unwrap().green().bold().underline()

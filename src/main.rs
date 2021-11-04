@@ -1,4 +1,4 @@
-use cmds::{build, new, setup};
+use cmds::{build, check, new, setup};
 use out::custom_dialoguer_theme;
 
 mod branches;
@@ -16,7 +16,8 @@ fn main() {
 	} else if matches.is_present("new") {
 		new::run(&matches, &prompt_theme);
 	} else if matches.is_present("build") {
-		build::run(&matches)
-	} else if matches.is_present("test") {
+		build::run(&matches);
+	} else if matches.is_present("check") {
+		check::run(&prompt_theme);
 	}
 }

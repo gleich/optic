@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use anyhow::Result;
 use walkdir::WalkDir;
 
+#[derive(Debug)]
 pub struct Branch {
 	pub path: PathBuf,
 	pub pdf_path: Option<PathBuf>,
