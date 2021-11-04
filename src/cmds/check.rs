@@ -1,10 +1,9 @@
-use crate::{
-	branches::{self, Branch},
-	conf,
-};
+use crate::branches::{self, Branch};
+use crate::conf;
 
 use anyhow::{Context, Result};
-use dialoguer::{theme::Theme, Confirm};
+use dialoguer::theme::Theme;
+use dialoguer::Confirm;
 
 use super::build::build;
 
