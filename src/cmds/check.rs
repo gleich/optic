@@ -81,7 +81,6 @@ fn output_and_ask(
 			.interact()
 			.context("Failed to confirm batch")?
 		{
-			println!("Said yes");
 			Ok(batch)
 		} else {
 			Ok(Vec::new())
