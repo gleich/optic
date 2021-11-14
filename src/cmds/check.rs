@@ -12,6 +12,10 @@ pub fn run(prompt_theme: &dyn Theme) {
 	let (missing_pdfs, unsynced_pdfs) = check_branches().expect("Failed to check branches");
 	let branches_to_build = output_and_ask(missing_pdfs, unsynced_pdfs, prompt_theme)
 		.expect("Failed to ask the use about the branches");
+
+	if !branches_to_build.is_empty() {
+		println!();
+	}
 	for branch in branches_to_build {
 		build(&config, &branch.path).expect("Failed to build branch file");
 	}
