@@ -15,7 +15,7 @@ use crate::inject::inject;
 use crate::out::success;
 
 #[derive(Debug)]
-struct Branch {
+struct BranchMetaData {
 	pub format: Format,
 	pub doc_type: DocType,
 	pub name: String,
@@ -26,10 +26,8 @@ struct Branch {
 }
 
 pub fn run(matches: &ArgMatches) {
-	let subcommand_matches = matches.subcommand_matches("build").unwrap();
 	let config = conf::read(false).expect("Failed to read from the configuration file");
-	let branch_path =
-		branch_to_build(subcommand_matches).expect("Failed to get what file should be built");
+	let branch_path = branch_to_build(matches).expect("Failed to get what file should be built");
 	build(&config, &branch_path).expect("Failed to build branch");
 }
 
@@ -82,7 +80,7 @@ fn branch_to_build(matches: &ArgMatches) -> Result<PathBuf> {
 	// Find and return file that was most recently updated
 	let mut min_time = None;
 	let mut file = None;
-	for branch in branches::get_all()? {
+	for branch in branches::get()? {
 		let modtime = branch
 			.path
 			.metadata()
@@ -105,8 +103,12 @@ fn branch_to_build(matches: &ArgMatches) -> Result<PathBuf> {
 	Ok(path)
 }
 
-fn extract_branch_data(config: &Config, content: &str, branch_path: &PathBuf) -> Result<Branch> {
-	/// Extract variable value. Example:
+fn extract_branch_data(
+	config: &Config,
+	content: &str,
+	branch_path: &PathBuf,
+) -> Result<BranchMetaData> {
+	/// Extract variable value from file. Example of what is being done on a line level:
 	/// "2021-08-18" from "create ―→ 2021-08-18"
 	fn extract_variable(
 		config: &Config,
@@ -141,7 +143,7 @@ fn extract_branch_data(config: &Config, content: &str, branch_path: &PathBuf) ->
 		_ => Format::LaTeX,
 	};
 	let lines: Vec<&str> = content.split("\n").collect();
-	let branch = Branch {
+	let branch = BranchMetaData {
 		name: branch_path
 			.file_name()
 			.unwrap()

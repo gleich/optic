@@ -10,7 +10,7 @@ pub struct Branch {
 	pub imgs_dir: Option<PathBuf>,
 }
 
-pub fn get_all() -> Result<Vec<Branch>> {
+pub fn get() -> Result<Vec<Branch>> {
 	let mut branches: Vec<Branch> = Vec::new();
 	for entry in WalkDir::new("docs") {
 		let entry = entry?;

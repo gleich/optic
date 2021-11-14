@@ -74,7 +74,6 @@ pub enum Format {
 	Markdown,
 }
 
-/// Types of templates that the user can write
 #[derive(EnumVariantNames, ToString, PartialEq, Debug, EnumString)]
 pub enum TemplateType {
 	#[strum(serialize = "root")]
@@ -84,7 +83,7 @@ pub enum TemplateType {
 }
 
 /// Read from the config file.
-/// Default parameter is to have the function return a blank config struct if the file doesn't exist.
+/// Default parameter is to have the function return a blank config struct if the file doesn't exist/is blank.
 pub fn read(default: bool) -> Result<Config> {
 	let loc = Path::new(FNAME);
 	if !loc.exists() && default {

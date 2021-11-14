@@ -15,11 +15,11 @@ pub fn custom_dialoguer_theme() -> ColorfulTheme {
 	theme
 }
 
-/// Output a success message
 pub fn success(message: &str) {
 	println!("{} {}", CHECK_CHARACTER.green(), message.bold());
 }
 
+/// Output a message saying that a value was obtained
 pub fn got_value(name: &str, value: &str) {
 	success(&format!(
 		"{} {} {}",

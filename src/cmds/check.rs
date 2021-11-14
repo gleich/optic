@@ -24,7 +24,7 @@ pub fn run(prompt_theme: &dyn Theme) {
 fn check_branches() -> Result<(Vec<Branch>, Vec<Branch>)> {
 	let mut missing_pdfs = Vec::new();
 	let mut unsynced_branches = Vec::new();
-	for branch in branches::get_all()? {
+	for branch in branches::get()? {
 		if branch.pdf_path.is_none() {
 			missing_pdfs.push(branch);
 			continue;

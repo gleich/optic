@@ -14,9 +14,9 @@ fn main() {
 	if matches.is_present("setup") {
 		setup::run(&prompt_theme);
 	} else if matches.is_present("new") {
-		new::run(&matches, &prompt_theme);
+		new::run(matches.subcommand_matches("new").unwrap(), &prompt_theme);
 	} else if matches.is_present("build") {
-		build::run(&matches);
+		build::run(matches.subcommand_matches("build").unwrap());
 	} else if matches.is_present("check") {
 		check::run(&prompt_theme);
 	}

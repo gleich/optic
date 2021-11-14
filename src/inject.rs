@@ -104,6 +104,8 @@ pub fn inject(
 	).context("Handlebar template injection failed")?)
 }
 
+/// Custom escape function for the handlebars template engine.
+/// Mainly created to escape characters from strings where the character isn't already escaped (e.g. the file name)
 pub fn custom_escape(s: &str, format: &Format) -> String {
 	if format == &Format::Markdown {
 		return s.to_string();

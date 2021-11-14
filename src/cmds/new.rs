@@ -16,7 +16,6 @@ use crate::{cli, conf, inject};
 
 pub fn run(matches: &ArgMatches, prompt_theme: &dyn Theme) {
 	let config = conf::read(false).expect("Failed to read from configuration file");
-	let matches = matches.subcommand_matches("new").unwrap();
 	let branch =
 		ask(matches, &config, prompt_theme).expect("Failed to ask user for info about the branch");
 	create(&branch, &config).expect("Failed to create the file");
