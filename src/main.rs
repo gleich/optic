@@ -1,4 +1,4 @@
-use cmds::{build, check, new, setup};
+use cmds::{build, check, commit, new, setup};
 use out::custom_dialoguer_theme;
 
 mod branches;
@@ -19,5 +19,7 @@ fn main() {
 		build::run(matches.subcommand_matches("build").unwrap());
 	} else if matches.is_present("check") {
 		check::run(&prompt_theme);
+	} else if matches.is_present("commit") {
+		commit::run();
 	}
 }

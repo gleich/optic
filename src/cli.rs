@@ -93,7 +93,8 @@ pub fn setup() -> Result<ArgMatches> {
 		.subcommand(
 			App::new("check")
 				.about("Check to see if any branches have PDFs that haven't been created/updated"),
-		);
+		)
+		.subcommand(App::new("commit").about("Commit all modified/untracked branches"));
 	if !Path::new(conf::FNAME).exists() {
 		app = app.subcommand(App::new("setup").about("Setup a kiwi project"));
 	}
