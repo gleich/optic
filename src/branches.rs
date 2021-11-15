@@ -10,6 +10,19 @@ pub struct Branch {
 	pub imgs_dir: Option<PathBuf>,
 }
 
+impl Branch {
+	pub fn name(&self) -> String {
+		self.path
+			.file_name()
+			.unwrap()
+			.to_str()
+			.unwrap()
+			.trim_end_matches(".tex")
+			.trim_end_matches(".md")
+			.to_string()
+	}
+}
+
 pub fn get() -> Result<Vec<Branch>> {
 	let mut branches: Vec<Branch> = Vec::new();
 	for entry in WalkDir::new("docs") {
