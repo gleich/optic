@@ -1,26 +1,18 @@
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use walkdir::WalkDir;
+
+use crate::conf::DocType;
 
 #[derive(Debug)]
 pub struct Branch {
 	pub path: PathBuf,
 	pub pdf_path: Option<PathBuf>,
 	pub imgs_dir: Option<PathBuf>,
-}
-
-impl Branch {
-	pub fn name(&self) -> String {
-		self.path
-			.file_name()
-			.unwrap()
-			.to_str()
-			.unwrap()
-			.trim_end_matches(".tex")
-			.trim_end_matches(".md")
-			.to_string()
-	}
+	pub name: String,
+	pub doc_type: DocType,
 }
 
 pub fn get() -> Result<Vec<Branch>> {
@@ -74,6 +66,26 @@ pub fn get() -> Result<Vec<Branch>> {
 				} else {
 					None
 				},
+				name: path
+					.file_name()
+					.unwrap()
+					.to_str()
+					.unwrap()
+					.trim_end_matches(".tex")
+					.trim_end_matches(".md")
+					.to_string(),
+				doc_type: DocType::from_str(
+					path.parent()
+						.unwrap()
+						.file_name()
+						.unwrap()
+						.to_str()
+						.unwrap(),
+				)
+				.context(format!(
+					"Failed to fetch document type for {}",
+					path.to_str().unwrap()
+				))?,
 			})
 		}
 	}
