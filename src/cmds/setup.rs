@@ -5,7 +5,7 @@ use std::{env, fs, process};
 use anyhow::{Context, Result};
 use colored::Colorize;
 use dialoguer::theme::Theme;
-use dialoguer::{Confirm, Input, Select};
+use dialoguer::{Confirm, FuzzySelect, Input};
 use which::which;
 
 use crate::conf::{Class, Config};
@@ -86,7 +86,7 @@ fn ask_config(prompt_theme: &dyn Theme) -> Result<(String, Config)> {
 		school: conf::School {
 			level: school_levels
 				.get(
-					Select::with_theme(prompt_theme)
+					FuzzySelect::with_theme(prompt_theme)
 						.with_prompt("School level")
 						.default(0)
 						.items(&school_levels)
@@ -98,7 +98,7 @@ fn ask_config(prompt_theme: &dyn Theme) -> Result<(String, Config)> {
 
 			type_name: school_types
 				.get(
-					Select::with_theme(prompt_theme)
+					FuzzySelect::with_theme(prompt_theme)
 						.with_prompt("School type")
 						.default(0)
 						.items(&school_types)

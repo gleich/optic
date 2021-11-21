@@ -3,7 +3,7 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use clap::{App, AppSettings, Arg, ArgMatches};
 use dialoguer::theme::Theme;
-use dialoguer::{Input, Select};
+use dialoguer::{FuzzySelect, Input};
 use strum::VariantNames;
 
 use crate::conf::{self, DocType, Format};
@@ -130,7 +130,7 @@ pub fn flag_or_select(
 	if flag.is_none() {
 		return Ok(options
 			.get(
-				Select::with_theme(prompt_theme)
+				FuzzySelect::with_theme(prompt_theme)
 					.with_prompt(prompt)
 					.default(0)
 					.items(&options)
