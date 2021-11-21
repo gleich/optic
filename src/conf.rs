@@ -3,7 +3,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use strum_macros::{EnumString, EnumVariantNames, ToString};
+use strum_macros::{Display, EnumString, EnumVariantNames};
 
 pub const FNAME: &str = "kiwi.toml";
 pub const TEMPLATES_DIR: &str = "templates";
@@ -58,7 +58,7 @@ pub struct School {
 	pub type_name: String,
 }
 
-#[derive(EnumVariantNames, ToString, EnumString, PartialEq, Debug)]
+#[derive(EnumVariantNames, Display, EnumString, PartialEq, Debug)]
 pub enum DocType {
 	Worksheet,
 	Note,
@@ -68,13 +68,13 @@ pub enum DocType {
 	Other,
 }
 
-#[derive(EnumVariantNames, ToString, Debug, Serialize, Deserialize, EnumString, PartialEq)]
+#[derive(EnumVariantNames, Display, Debug, Serialize, Deserialize, EnumString, PartialEq)]
 pub enum Format {
 	LaTeX,
 	Markdown,
 }
 
-#[derive(EnumVariantNames, ToString, PartialEq, Debug, EnumString)]
+#[derive(EnumVariantNames, Display, PartialEq, Debug, EnumString)]
 pub enum TemplateType {
 	#[strum(serialize = "root")]
 	Root,

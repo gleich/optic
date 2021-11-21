@@ -40,7 +40,7 @@ pub fn setup() -> Result<ArgMatches> {
 						.about("Name of the class")
 						.takes_value(true)
 						.value_name("CLASS")
-						.possible_values(&classes.iter().map(|s| s as &str).collect::<Vec<&str>>()),
+						.possible_values(classes.iter().map(|s| s as &str).collect::<Vec<&str>>()),
 				)
 				.arg(
 					Arg::new("type")
@@ -77,7 +77,7 @@ pub fn setup() -> Result<ArgMatches> {
 						.about("Filename of the root file")
 						.takes_value(true)
 						.possible_values(
-							&root_files.iter().map(|s| s as &str).collect::<Vec<&str>>(),
+							root_files.iter().map(|s| s as &str).collect::<Vec<&str>>(),
 						),
 				),
 		)
