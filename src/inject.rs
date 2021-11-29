@@ -38,7 +38,7 @@ pub fn inject(
 				},
 				"month": time.format("%B").to_string(),
 			},
-			"name": custom_escape(branch_filename.replace("_", " ").replace("-", " ").trim_end_matches(".md").trim_end_matches(".tex"), format),
+			"name": custom_escape(branch_filename.trim_end_matches(".md").trim_end_matches(".tex"), format),
 			"root_filename": root_filename,
 			"author": config.name,
 			"class": {
