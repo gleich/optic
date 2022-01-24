@@ -24,16 +24,10 @@ pub struct Config {
 }
 
 // Defaults
-fn default_delimiter() -> String {
-	String::from(">")
-}
-fn default_active() -> bool {
-	true
-}
+fn default_delimiter() -> String { String::from(">") }
+fn default_active() -> bool { true }
 impl Default for Format {
-	fn default() -> Self {
-		Format::Markdown
-	}
+	fn default() -> Self { Format::Markdown }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
