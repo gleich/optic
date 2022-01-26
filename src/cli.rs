@@ -29,7 +29,7 @@ pub fn setup() -> Result<ArgMatches> {
 					Arg::new("name")
 						.long("name")
 						.short('n')
-						.about("Name of the file")
+						.help("Name of the file")
 						.takes_value(true)
 						.value_name("NAME"),
 				)
@@ -37,16 +37,16 @@ pub fn setup() -> Result<ArgMatches> {
 					Arg::new("class")
 						.long("class")
 						.short('c')
-						.about("Name of the class")
+						.help("Name of the class")
 						.takes_value(true)
 						.value_name("CLASS")
-						.possible_values(&classes.iter().map(|s| s as &str).collect::<Vec<&str>>()),
+						.possible_values(classes.iter().map(|s| s as &str).collect::<Vec<&str>>()),
 				)
 				.arg(
 					Arg::new("type")
 						.long("type")
 						.short('t')
-						.about("Document type")
+						.help("Document type")
 						.takes_value(true)
 						.value_name("TYPE")
 						.possible_values(DocType::VARIANTS),
@@ -56,7 +56,7 @@ pub fn setup() -> Result<ArgMatches> {
 						.long("format")
 						.short('f')
 						.value_name("FORMAT")
-						.about("Format that the file should be created in")
+						.help("Format that the file should be created in")
 						.takes_value(true)
 						.possible_values(Format::VARIANTS)
 						.default_value(&default_format),
@@ -66,7 +66,7 @@ pub fn setup() -> Result<ArgMatches> {
 						.long("branch")
 						.short('b')
 						.value_name("PATH")
-						.about("Filename of the branch template file")
+						.help("Filename of the branch template file")
 						.takes_value(true),
 				)
 				.arg(
@@ -74,17 +74,17 @@ pub fn setup() -> Result<ArgMatches> {
 						.long("root")
 						.short('r')
 						.value_name("PATH")
-						.about("Filename of the root file")
+						.help("Filename of the root file")
 						.takes_value(true)
 						.possible_values(
-							&root_files.iter().map(|s| s as &str).collect::<Vec<&str>>(),
+							root_files.iter().map(|s| s as &str).collect::<Vec<&str>>(),
 						),
 				),
 		)
 		.subcommand(
 			App::new("build").about("Build a branch").arg(
 				Arg::new("path")
-					.about("Path to the file. Defaults to the most recent branch to be updated")
+					.help("Path to the file. Defaults to the most recent branch to be updated")
 					.value_name("PATH")
 					.index(1)
 					.required(false),
