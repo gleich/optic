@@ -1,9 +1,14 @@
 use conf::Config;
 
+mod cli;
+mod cmd;
 mod conf;
 mod format;
 
 fn main() {
-	let config = Config::read().expect("Failed to read config file");
-	println!("{:?}", config);
+	let matches = cli::setup();
+	match matches.subcommand() {
+		Some(("build", _)) => cmd::build::run(),
+		_ => unreachable!(),
+	}
 }
