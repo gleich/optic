@@ -2,8 +2,9 @@ use std::fs;
 
 use anyhow::Result;
 use serde::Deserialize;
+use strum_macros::Display;
 
-use crate::format::Format;
+use crate::locations;
 
 #[derive(Deserialize, Debug, PartialEq)]
 pub struct Config {
@@ -24,8 +25,24 @@ pub struct Class {
 	pub active: bool,
 }
 
+#[derive(PartialEq, Debug, Display, Deserialize)]
+pub enum Format {
+	LaTeX,
+	Markdown,
+}
+
+#[derive(PartialEq, Debug, Display, Deserialize)]
+pub enum DocumentType {
+	Worksheet,
+	Note,
+	Assessment,
+	Essay,
+	Lab,
+	Other,
+}
+
 mod defaults {
-	use crate::format::Format;
+	use super::Format;
 
 	pub fn config_delimiter() -> String { String::from(">") }
 	pub fn config_default_format() -> Format { Format::Markdown }
@@ -35,8 +52,17 @@ mod defaults {
 
 impl Config {
 	pub fn read() -> Result<Config> {
-		let content = fs::read_to_string("./kiwi.toml")?;
+		let content = fs::read_to_string(locations::files::CONFIG)?;
 		Ok(toml::from_str::<Config>(&content)?)
+	}
+}
+
+impl Format {
+	pub fn file_extension(&self) -> &'static str {
+		match *self {
+			Format::LaTeX => ".tex",
+			Format::Markdown => ".md",
+		}
 	}
 }
 
@@ -44,8 +70,8 @@ impl Config {
 mod test {
 	use toml::de::Error;
 
+	use super::Format;
 	use crate::conf::{Class, Config};
-	use crate::format::Format;
 
 	#[test]
 	fn read_config() -> Result<(), Error> {

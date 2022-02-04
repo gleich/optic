@@ -16,6 +16,8 @@ strum_macros = "0.23.0"
 toml = "0.5.8"
 anyhow = "1.0.53"
 clap = "3.0.13"
+chrono = "0.4.19"
+num-traits = "0.2.14"
 
 [[bin]]
 name = "kiwi"

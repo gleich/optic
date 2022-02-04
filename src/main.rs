@@ -1,9 +1,10 @@
 use conf::Config;
 
+mod branch;
 mod cli;
 mod cmd;
 mod conf;
-mod format;
+mod locations;
 
 fn main() {
 	let matches = cli::setup();
