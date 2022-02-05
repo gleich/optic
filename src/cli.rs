@@ -6,6 +6,6 @@ pub fn setup() -> ArgMatches {
 		.author("Matt Gleich <email@mattglei.ch>")
 		.about("🥝 Schoolwork as code")
 		.setting(AppSettings::ArgRequiredElseHelp)
-		.subcommand(App::new("build").about("Build a branch"))
+		.subcommand(App::new("new").about("Create a new branch"))
 		.get_matches()
 }

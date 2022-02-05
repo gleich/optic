@@ -1,5 +1,3 @@
-use conf::Config;
-
 mod branch;
 mod cli;
 mod cmd;
@@ -9,7 +7,7 @@ mod locations;
 fn main() {
 	let matches = cli::setup();
 	match matches.subcommand() {
-		Some(("build", _)) => cmd::build::run(),
+		Some(("new", _)) => cmd::new::run(),
 		_ => unreachable!(),
 	}
 }
