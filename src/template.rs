@@ -7,14 +7,14 @@ use anyhow::{bail, Result};
 use crate::conf::Format;
 use crate::locations::folders;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct BranchTemplate {
 	pub path: PathBuf,
 	pub name: String,
 	pub format: Format,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct RootTemplate {
 	pub path: PathBuf,
 	pub name: String,
@@ -58,7 +58,14 @@ impl BranchTemplate {
 impl RootTemplate {
 	pub fn new(path: PathBuf) -> Self {
 		Self {
-			name: path.file_name().unwrap().to_str().unwrap().to_string(),
+			name: path
+				.file_name()
+				.unwrap()
+				.to_str()
+				.unwrap()
+				.strip_suffix(".hbs")
+				.unwrap()
+				.to_string(),
 			path,
 		}
 	}

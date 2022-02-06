@@ -6,6 +6,7 @@ use num_traits::FromPrimitive;
 
 use crate::conf::{Class, DocumentType, Format};
 use crate::locations;
+use crate::template::{BranchTemplate, RootTemplate};
 
 #[derive(Debug, PartialEq)]
 pub struct Branch {
@@ -16,10 +17,19 @@ pub struct Branch {
 	pub path: PathBuf,
 	pub pdf_path: PathBuf,
 	pub imgs_dir: PathBuf,
+	pub branch_template: BranchTemplate,
+	pub root_template: RootTemplate,
 }
 
 impl Branch {
-	pub fn new(name: String, format: Format, doc_type: DocumentType, class: Class) -> Result<Self> {
+	pub fn new(
+		name: String,
+		format: Format,
+		doc_type: DocumentType,
+		class: Class,
+		branch_template: BranchTemplate,
+		root_template: RootTemplate,
+	) -> Result<Self> {
 		let month_name = Month::from_u32(Local::now().month()).unwrap().name();
 		Ok(Branch {
 			path: PathBuf::from(locations::folders::BRANCHES)
@@ -40,6 +50,8 @@ impl Branch {
 			format,
 			doc_type,
 			class,
+			branch_template,
+			root_template,
 		})
 	}
 }
@@ -52,6 +64,7 @@ mod test {
 
 	use crate::branch::Branch;
 	use crate::conf::{Class, DocumentType, Format};
+	use crate::template::{BranchTemplate, RootTemplate};
 
 	#[test]
 	fn new() -> Result<()> {
@@ -63,6 +76,15 @@ mod test {
 				Class {
 					name: String::from("AP Physics 2"),
 					teacher: String::from("Mr. Feynman"),
+				},
+				BranchTemplate {
+					path: PathBuf::from("./templates/branch/base.tex.hbs"),
+					name: String::from("base"),
+					format: Format::LaTeX,
+				},
+				RootTemplate {
+					path: PathBuf::from("./templates/root/base.tex.hbs"),
+					name: String::from("base")
 				}
 			)?,
 			Branch {
@@ -75,7 +97,16 @@ mod test {
 				},
 				path: PathBuf::from("docs/AP Physics 2/February/Worksheet/Working.tex"),
 				pdf_path: PathBuf::from("pdfs/AP Physics 2/February/Worksheet/Working.pdf"),
-				imgs_dir: PathBuf::from("imgs/AP Physics 2/February/Working")
+				imgs_dir: PathBuf::from("imgs/AP Physics 2/February/Working"),
+				branch_template: BranchTemplate {
+					path: PathBuf::from("./templates/branch/base.tex.hbs"),
+					name: String::from("base"),
+					format: Format::LaTeX,
+				},
+				root_template: RootTemplate {
+					path: PathBuf::from("./templates/root/base.tex.hbs"),
+					name: String::from("base")
+				}
 			}
 		);
 
@@ -87,6 +118,15 @@ mod test {
 				Class {
 					name: String::from("Economics Honors"),
 					teacher: String::from("Mr. Buffet"),
+				},
+				BranchTemplate {
+					path: PathBuf::from("./templates/branch/base.tex.hbs"),
+					name: String::from("base"),
+					format: Format::LaTeX,
+				},
+				RootTemplate {
+					path: PathBuf::from("./templates/root/base.tex.hbs"),
+					name: String::from("base")
 				}
 			)?,
 			Branch {
@@ -99,7 +139,16 @@ mod test {
 				},
 				path: PathBuf::from("docs/Economics Honors/February/Other/Hello World.md"),
 				pdf_path: PathBuf::from("pdfs/Economics Honors/February/Other/Hello World.pdf"),
-				imgs_dir: PathBuf::from("imgs/Economics Honors/February/Hello World")
+				imgs_dir: PathBuf::from("imgs/Economics Honors/February/Hello World"),
+				branch_template: BranchTemplate {
+					path: PathBuf::from("./templates/branch/base.tex.hbs"),
+					name: String::from("base"),
+					format: Format::LaTeX,
+				},
+				root_template: RootTemplate {
+					path: PathBuf::from("./templates/root/base.tex.hbs"),
+					name: String::from("base")
+				}
 			}
 		);
 
