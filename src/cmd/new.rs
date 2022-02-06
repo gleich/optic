@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::str::FromStr;
 
 use anyhow::Result;
@@ -6,9 +7,12 @@ use dialoguer::{FuzzySelect, Input};
 use strum::VariantNames;
 
 use crate::branch::Branch;
-use crate::conf::{Class, Config, DocumentType, Format};
+use crate::conf::{Config, DocumentType, Format};
+use crate::template::BranchTemplate;
 
 pub fn run() {
+	let branches = BranchTemplate::get_all().expect("Failed to get all branches");
+	println!("{:?}", branches);
 	let config = Config::read().expect("Failed to read from config file");
 	let branch = ask(&config).expect("Failed to ask user about branch");
 	println!("{:?}", branch);
