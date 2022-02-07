@@ -22,7 +22,10 @@ pub fn run() {
 			Local::now(),
 		)
 		.expect("Failed to inject variables into branch");
-	println!("{}", formatted_branch);
+	fs::create_dir_all(branch.path.parent().unwrap())
+		.expect("Failed to create parent folder for new branch file");
+	fs::write(&branch.path, formatted_branch).expect("Failed to format branch");
+	println!("\nCreated branch file: {}", branch.path.display());
 }
 
 fn ask(config: &mut Config) -> Result<Branch> {
