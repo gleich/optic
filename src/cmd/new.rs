@@ -1,6 +1,8 @@
+use std::fs;
 use std::str::FromStr;
 
 use anyhow::Result;
+use chrono::Local;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::{FuzzySelect, Input, Select};
 use strum::VariantNames;
@@ -10,13 +12,21 @@ use crate::conf::{Config, DocumentType, Format};
 use crate::template::{BranchTemplate, RootTemplate};
 
 pub fn run() {
-	let branch = ask().expect("Failed to ask user about branch");
-	println!("{:?}", branch);
+	let mut config = Config::read().expect("Failed to read from config file");
+	let branch = ask(&mut config).expect("Failed to ask user about branch");
+	let formatted_branch = branch
+		.inject(
+			&config,
+			fs::read_to_string(&branch.branch_template.path)
+				.expect("Failed to read from branch file"),
+			Local::now(),
+		)
+		.expect("Failed to inject variables into branch");
+	println!("{}", formatted_branch);
 }
 
-fn ask() -> Result<Branch> {
+fn ask(config: &mut Config) -> Result<Branch> {
 	let theme = ColorfulTheme::default();
-	let mut config = Config::read()?;
 	let mut branch_templates = BranchTemplate::get_all()?;
 	let mut root_templates = RootTemplate::get_all()?;
 
@@ -52,6 +62,7 @@ fn ask() -> Result<Branch> {
 		FuzzySelect::with_theme(&theme)
 			.with_prompt("Class")
 			.items(config.classes.as_slice())
+			.default(0)
 			.interact()?,
 	);
 
@@ -63,6 +74,7 @@ fn ask() -> Result<Branch> {
 		FuzzySelect::with_theme(&theme)
 			.with_prompt("Branch Template")
 			.items(branch_templates.as_slice())
+			.default(0)
 			.interact()?,
 	);
 
@@ -70,6 +82,7 @@ fn ask() -> Result<Branch> {
 		FuzzySelect::with_theme(&theme)
 			.with_prompt("Root Template")
 			.items(root_templates.as_slice())
+			.default(0)
 			.interact()?,
 	);
 

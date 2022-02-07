@@ -8,7 +8,7 @@ use crate::locations;
 
 #[derive(Deserialize, Debug, PartialEq)]
 pub struct Config {
-	pub name: String,
+	pub author: String,
 	#[serde(default = "defaults::config_delimiter")]
 	pub delimiter: String,
 	pub open_with: Option<Vec<String>>,
@@ -89,7 +89,7 @@ mod test {
     "
 			)?,
 			Config {
-				name: String::from("Matt Gleich"),
+				author: String::from("Matt Gleich"),
 				delimiter: String::from(">"),
 				open_with: None,
 				default_format: Format::Markdown,
@@ -113,7 +113,7 @@ mod test {
     "
 			)?,
 			Config {
-				name: String::from("Matt Gleich"),
+				author: String::from("Matt Gleich"),
 				delimiter: String::from(">"),
 				open_with: Some(vec![String::from("code")]),
 				default_format: Format::LaTeX,
@@ -141,7 +141,7 @@ mod test {
     "
 			)?,
 			Config {
-				name: String::from("Matt Gleich"),
+				author: String::from("Matt Gleich"),
 				delimiter: String::from(">"),
 				open_with: Some(vec![String::from("code")]),
 				default_format: Format::LaTeX,

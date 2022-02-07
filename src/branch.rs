@@ -1,10 +1,14 @@
+use std::fs;
 use std::path::PathBuf;
 
 use anyhow::Result;
-use chrono::{Datelike, Local, Month};
+use chrono::{DateTime, Datelike, Local, Month};
+use handlebars::Handlebars;
 use num_traits::FromPrimitive;
+use ordinal::Ordinal;
+use serde_json::json;
 
-use crate::conf::{Class, DocumentType, Format};
+use crate::conf::{Class, Config, DocumentType, Format};
 use crate::locations;
 use crate::template::{BranchTemplate, RootTemplate};
 
@@ -53,6 +57,70 @@ impl Branch {
 			branch_template,
 			root_template,
 		})
+	}
+
+	pub fn inject(
+		&self,
+		config: &Config,
+		template_content: String,
+		time: DateTime<Local>,
+	) -> Result<String> {
+		fn custom_escape(s: &str, format: &Format) -> String {
+			if *format == Format::Markdown {
+				return s.to_string();
+			}
+			let mut output = String::new();
+			for (i, c) in s.chars().enumerate() {
+				if s.chars().nth(i - 1).unwrap_or_default().to_string() == "\\".to_string() {
+					output.push(c);
+					continue;
+				}
+				match c {
+					'&' => output.push_str("\\&"),
+					'$' => output.push_str("\\$"),
+					'#' => output.push_str("\\#"),
+					'%' => output.push_str("\\%"),
+					_ => output.push(c),
+				}
+			}
+			output
+		}
+
+		let ordinal_suffix = Ordinal(time.day()).suffix();
+		let mut reg = Handlebars::new();
+		reg.set_strict_mode(true);
+		reg.register_escape_fn(handlebars::no_escape);
+
+		Ok(reg.render_template(
+			&template_content,
+			&json!({
+				"time": {
+					"simple_date": time.format("%F").to_string(),
+					"day": time.day(),
+					"year": time.year(),
+					"date": match self.format {
+						Format::Markdown => time.format(&format!("%A, %B %e^{}^, %Y", ordinal_suffix)).to_string(),
+						Format::LaTeX => time.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
+					},
+					"month": time.format("%B").to_string()
+				},
+				"author": config.author,
+				"name": custom_escape(&self.branch_template.name, &self.format),
+				"class": {
+					"name": custom_escape(&self.class.name, &self.format),
+					"teacher": self.class.teacher,
+				},
+				"branch": {
+					"filename": self.branch_template.path.file_name().unwrap().to_str().unwrap().to_string(),
+					"content": fs::read_to_string(&self.branch_template.path)?,
+				},
+				"root": {
+					"filename": self.root_template.path.file_name().unwrap().to_str().unwrap().to_string()
+				},
+				"type": self.doc_type.to_string(),
+				"required_preamble": include_str!("required_preamble.tex")
+			}),
+		)?)
 	}
 }
 
