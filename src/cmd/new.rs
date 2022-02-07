@@ -24,6 +24,7 @@ pub fn run() {
 		.expect("Failed to inject variables into branch");
 	fs::create_dir_all(branch.path.parent().unwrap())
 		.expect("Failed to create parent folder for new branch file");
+	fs::create_dir_all(branch.imgs_dir).expect("Failed to create images directory for branch");
 	fs::write(&branch.path, formatted_branch).expect("Failed to format branch");
 	println!("\nCreated branch file: {}", branch.path.display());
 }
