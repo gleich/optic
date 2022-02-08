@@ -22,6 +22,8 @@ pub struct Config {
 pub struct Class {
 	pub name: String,
 	pub teacher: String,
+	#[serde(default = "defaults::class_active")]
+	pub active: bool,
 }
 
 #[derive(PartialEq, Debug, Display, Deserialize, EnumVariantNames, EnumString, Clone)]
@@ -35,7 +37,7 @@ pub enum DocumentType {
 	Worksheet,
 	Note,
 	Assessment,
-	Essay,
+	Paper,
 	Lab,
 	Other,
 }
@@ -45,6 +47,8 @@ mod defaults {
 
 	pub fn config_delimiter() -> String { String::from(">") }
 	pub fn config_default_format() -> Format { Format::Markdown }
+
+	pub fn class_active() -> bool { true }
 }
 
 impl Config {
@@ -63,7 +67,7 @@ impl Format {
 	}
 
 	pub fn from_path(path: &PathBuf) -> Option<Self> {
-		match path.extension().unwrap().to_str().unwrap() {
+		match path.extension().unwrap_or_default().to_str().unwrap() {
 			"tex" => Some(Format::LaTeX),
 			"md" => Some(Format::Markdown),
 			_ => None,
@@ -94,7 +98,7 @@ mod test {
 		assert_eq!(
 			toml::from_str::<Config>(
 				"
-        name = \"Matt Gleich\"
+        author = \"Matt Gleich\"
 
         [[classes]]
         name = \"AP Physics 2\"
@@ -109,6 +113,7 @@ mod test {
 				classes: vec![Class {
 					name: String::from("AP Physics 2"),
 					teacher: String::from("Mr. Feynman"),
+					active: true
 				}],
 			}
 		);
@@ -116,7 +121,7 @@ mod test {
 		assert_eq!(
 			toml::from_str::<Config>(
 				"
-        name = \"Matt Gleich\"
+        author = \"Matt Gleich\"
         open_with = [\"code\"]
         default_format = \"LaTeX\"
 
@@ -133,6 +138,7 @@ mod test {
 				classes: vec![Class {
 					name: String::from("AP Physics 2"),
 					teacher: String::from("Mr. Feynman"),
+					active: true
 				}],
 			}
 		);
@@ -140,7 +146,7 @@ mod test {
 		assert_eq!(
 			toml::from_str::<Config>(
 				"
-        name = \"Matt Gleich\"
+        author = \"Matt Gleich\"
         open_with = [\"code\"]
         default_format = \"LaTeX\"
 
@@ -151,6 +157,7 @@ mod test {
         [[classes]]
         name = \"AP Chemistry 2\"
         teacher = \"Mr. White\"
+		active = false
     "
 			)?,
 			Config {
@@ -162,10 +169,12 @@ mod test {
 					Class {
 						name: String::from("AP Physics 2"),
 						teacher: String::from("Mr. Feynman"),
+						active: true
 					},
 					Class {
 						name: String::from("AP Chemistry 2"),
 						teacher: String::from("Mr. White"),
+						active: false
 					}
 				],
 			}

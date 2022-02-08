@@ -2,16 +2,18 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::time::SystemTime;
 
-use anyhow::{bail, Result};
-use chrono::{DateTime, Datelike, Local, Month};
+use anyhow::{bail, Context, Result};
+use chrono::{Date, Datelike, Local, Month, NaiveDate, TimeZone};
 use handlebars::Handlebars;
 use num_traits::FromPrimitive;
 use ordinal::Ordinal;
 use serde_json::json;
+use walkdir::WalkDir;
 
 use crate::conf::{Class, Config, DocumentType, Format};
-use crate::locations;
+use crate::locations::{self, folders};
 use crate::template::{BranchTemplate, RootTemplate};
 
 #[derive(Debug, PartialEq)]
@@ -25,6 +27,8 @@ pub struct Branch {
 	pub imgs_dir: PathBuf,
 	pub branch_template: Option<BranchTemplate>,
 	pub root_template: RootTemplate,
+	pub creation_time: Date<Local>,
+	pub mod_time: SystemTime,
 }
 
 impl Branch {
@@ -35,8 +39,10 @@ impl Branch {
 		class: Class,
 		branch_template: Option<BranchTemplate>,
 		root_template: RootTemplate,
+		creation_time: Date<Local>,
+		mod_time: SystemTime,
 	) -> Result<Self> {
-		let month_name = Month::from_u32(Local::now().month()).unwrap().name();
+		let month_name = Month::from_u32(creation_time.month()).unwrap().name();
 		Ok(Branch {
 			path: PathBuf::from(locations::folders::BRANCHES)
 				.join(&class.name)
@@ -58,6 +64,8 @@ impl Branch {
 			class,
 			branch_template,
 			root_template,
+			creation_time,
+			mod_time,
 		})
 	}
 
@@ -65,7 +73,7 @@ impl Branch {
 		&self,
 		config: &Config,
 		template_content: String,
-		time: DateTime<Local>,
+		time: Date<Local>,
 	) -> Result<String> {
 		fn custom_escape(s: &str, format: &Format) -> String {
 			if *format == Format::Markdown {
@@ -140,7 +148,6 @@ impl Branch {
 				continue;
 			}
 			let chunks = raw_chunks.unwrap();
-			println!("{:?}", data);
 			data.insert(chunks.0.trim().to_string(), chunks.1.trim().to_string());
 			if format == Format::Markdown && trimmed_line.starts_with("-->")
 				|| format == Format::LaTeX && trimmed_line.starts_with("\\fi")
@@ -148,7 +155,6 @@ impl Branch {
 				break;
 			}
 		}
-		println!("{:?}", data);
 		let required_keys = ["created", "root"];
 		for key in required_keys {
 			if !data.contains_key(key) {
@@ -169,7 +175,8 @@ impl Branch {
 				.unwrap()
 				.to_string(),
 			format,
-			DocumentType::from_str(doc_type)?,
+			DocumentType::from_str(doc_type)
+				.context(format!("Failed to pair document type {}", &path.display()))?,
 			config
 				.classes
 				.iter()
@@ -178,15 +185,37 @@ impl Branch {
 				.clone(),
 			None,
 			RootTemplate::from_filename(data.get("root").unwrap()),
+			Local
+				.from_local_date(&NaiveDate::parse_from_str(
+					data.get("created").unwrap(),
+					"%F",
+				)?)
+				.unwrap(),
+			fs::metadata(path)?.modified()?,
 		)?)
+	}
+
+	pub fn get_all(config: &Config) -> Result<Vec<Self>> {
+		let mut branches: Vec<Self> = Vec::new();
+		for entry in WalkDir::new(folders::BRANCHES) {
+			let entry = entry?;
+			let extension = Format::from_path(&entry.path().to_path_buf());
+			if entry.file_type().is_file() && extension.is_some() {
+				branches.push(Self::parse(entry.path().to_path_buf(), config)?)
+			}
+		}
+		branches.sort_by(|a, b| b.mod_time.cmp(&a.mod_time));
+		Ok(branches)
 	}
 }
 
 #[cfg(test)]
 mod test {
 	use std::path::PathBuf;
+	use std::time::SystemTime;
 
 	use anyhow::Result;
+	use chrono::Local;
 
 	use crate::branch::Branch;
 	use crate::conf::{Class, DocumentType, Format};
@@ -194,6 +223,8 @@ mod test {
 
 	#[test]
 	fn new() -> Result<()> {
+		let date_now = Local::now().date();
+		let systemtime_now = SystemTime::now();
 		assert_eq!(
 			Branch::new(
 				String::from("Working"),
@@ -202,6 +233,7 @@ mod test {
 				Class {
 					name: String::from("AP Physics 2"),
 					teacher: String::from("Mr. Feynman"),
+					active: true
 				},
 				Some(BranchTemplate {
 					path: PathBuf::from("./templates/branch/base.tex.hbs"),
@@ -211,7 +243,9 @@ mod test {
 				RootTemplate {
 					path: PathBuf::from("./templates/root/base.tex.hbs"),
 					name: String::from("base")
-				}
+				},
+				date_now,
+				systemtime_now
 			)?,
 			Branch {
 				name: String::from("Working"),
@@ -220,6 +254,7 @@ mod test {
 				class: Class {
 					name: String::from("AP Physics 2"),
 					teacher: String::from("Mr. Feynman"),
+					active: true
 				},
 				path: PathBuf::from("docs/AP Physics 2/February/Worksheet/Working.tex"),
 				pdf_path: PathBuf::from("pdfs/AP Physics 2/February/Worksheet/Working.pdf"),
@@ -232,7 +267,9 @@ mod test {
 				root_template: RootTemplate {
 					path: PathBuf::from("./templates/root/base.tex.hbs"),
 					name: String::from("base")
-				}
+				},
+				creation_time: date_now,
+				mod_time: systemtime_now
 			}
 		);
 
@@ -244,6 +281,7 @@ mod test {
 				Class {
 					name: String::from("Economics Honors"),
 					teacher: String::from("Mr. Buffet"),
+					active: true
 				},
 				Some(BranchTemplate {
 					path: PathBuf::from("./templates/branch/base.tex.hbs"),
@@ -253,7 +291,9 @@ mod test {
 				RootTemplate {
 					path: PathBuf::from("./templates/root/base.tex.hbs"),
 					name: String::from("base")
-				}
+				},
+				date_now,
+				systemtime_now
 			)?,
 			Branch {
 				name: String::from("Hello World"),
@@ -262,6 +302,7 @@ mod test {
 				class: Class {
 					name: String::from("Economics Honors"),
 					teacher: String::from("Mr. Buffet"),
+					active: true
 				},
 				path: PathBuf::from("docs/Economics Honors/February/Other/Hello World.md"),
 				pdf_path: PathBuf::from("pdfs/Economics Honors/February/Other/Hello World.pdf"),
@@ -274,7 +315,9 @@ mod test {
 				root_template: RootTemplate {
 					path: PathBuf::from("./templates/root/base.tex.hbs"),
 					name: String::from("base")
-				}
+				},
+				creation_time: date_now,
+				mod_time: systemtime_now
 			}
 		);
 

@@ -1,5 +1,6 @@
 use std::fs;
 use std::str::FromStr;
+use std::time::SystemTime;
 
 use anyhow::Result;
 use chrono::Local;
@@ -8,7 +9,7 @@ use dialoguer::{FuzzySelect, Input, Select};
 use strum::VariantNames;
 
 use crate::branch::Branch;
-use crate::conf::{Config, DocumentType, Format};
+use crate::conf::{Class, Config, DocumentType, Format};
 use crate::template::{BranchTemplate, RootTemplate};
 
 pub fn run() {
@@ -19,7 +20,7 @@ pub fn run() {
 			&config,
 			fs::read_to_string(branch.branch_template.clone().unwrap().path)
 				.expect("Failed to read from branch file"),
-			Local::now(),
+			Local::now().date(),
 		)
 		.expect("Failed to inject variables into branch");
 	fs::create_dir_all(branch.path.parent().unwrap())
@@ -65,7 +66,14 @@ fn ask(config: &mut Config) -> Result<Branch> {
 	let class = config.classes.swap_remove(
 		FuzzySelect::with_theme(&theme)
 			.with_prompt("Class")
-			.items(config.classes.as_slice())
+			.items(
+				config
+					.classes
+					.iter()
+					.filter(|c| c.active)
+					.collect::<Vec<&Class>>()
+					.as_slice(),
+			)
 			.default(0)
 			.interact()?,
 	);
@@ -97,5 +105,7 @@ fn ask(config: &mut Config) -> Result<Branch> {
 		class,
 		Some(branch_template),
 		root_template,
+		Local::now().date(),
+		SystemTime::now(),
 	)
 }
