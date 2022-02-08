@@ -23,6 +23,8 @@ handlebars = "4.2.1"
 serde_json = "1.0.78"
 ordinal = "0.3.2"
 walkdir = "2.3.2"
+colorful = "0.2.1"
+term_cursor = "0.2.1"
 
 [[bin]]
 name = "kiwi"

@@ -3,6 +3,7 @@ mod cli;
 mod cmd;
 mod conf;
 mod locations;
+mod out;
 mod template;
 
 fn main() {

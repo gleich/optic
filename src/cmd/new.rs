@@ -20,7 +20,7 @@ pub fn run() {
 			&config,
 			fs::read_to_string(branch.branch_template.clone().unwrap().path)
 				.expect("Failed to read from branch file"),
-			Local::now().date(),
+			None,
 		)
 		.expect("Failed to inject variables into branch");
 	fs::create_dir_all(branch.path.parent().unwrap())

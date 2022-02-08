@@ -1,8 +1,9 @@
 use std::collections::HashMap;
-use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::time::SystemTime;
+use std::{env, fs};
 
 use anyhow::{bail, Context, Result};
 use chrono::{Date, Datelike, Local, Month, NaiveDate, TimeZone};
@@ -13,7 +14,7 @@ use serde_json::json;
 use walkdir::WalkDir;
 
 use crate::conf::{Class, Config, DocumentType, Format};
-use crate::locations::{self, folders};
+use crate::locations::{self, files, folders};
 use crate::template::{BranchTemplate, RootTemplate};
 
 #[derive(Debug, PartialEq)]
@@ -74,7 +75,7 @@ impl Branch {
 		&self,
 		config: &Config,
 		template_content: String,
-		time: Date<Local>,
+		branch_content: Option<String>,
 	) -> Result<String> {
 		fn custom_escape(s: &str, format: &Format) -> String {
 			if *format == Format::Markdown {
@@ -97,25 +98,23 @@ impl Branch {
 			output
 		}
 
-		let ordinal_suffix = Ordinal(time.day()).suffix();
+		let ordinal_suffix = Ordinal(self.creation_time.day()).suffix();
 		let mut reg = Handlebars::new();
-		reg.set_strict_mode(true);
 		reg.register_escape_fn(handlebars::no_escape);
-
-		let branch_template = self.branch_template.clone().unwrap_or_default();
 
 		Ok(reg.render_template(
 			&template_content,
 			&json!({
 				"time": {
-					"simple_date": time.format("%F").to_string(),
-					"day": time.day(),
-					"year": time.year(),
-					"date": match self.format {
-						Format::Markdown => time.format(&format!("%A, %B %e^{}^, %Y", ordinal_suffix)).to_string(),
-						Format::LaTeX => time.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
+					"simple_date": self.creation_time.format("%F").to_string(),
+					"day": self.creation_time.day(),
+					"year": self.creation_time.year(),
+					"date": match (&self.format, branch_content.is_some()) {
+						(Format::Markdown, false) => self.creation_time.format(&format!("%A, %B %e^{}^, %Y", ordinal_suffix)).to_string(),
+						(Format::Markdown, true) => self.creation_time.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string(),
+						(Format::LaTeX, false | true) => self.creation_time.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
 					},
-					"month": time.format("%B").to_string()
+					"month": self.creation_time.format("%B").to_string()
 				},
 				"author": config.author,
 				"name": custom_escape(&self.name, &self.format),
@@ -123,12 +122,11 @@ impl Branch {
 					"name": custom_escape(&self.class.name, &self.format),
 					"teacher": self.class.teacher,
 				},
-				"branch": {
-					"filename": &branch_template.path.file_name().unwrap().to_str().unwrap().to_string(),
-					"content": fs::read_to_string(&branch_template.path)?,
-				},
 				"root": {
 					"filename": self.root_template.path.file_name().unwrap().to_str().unwrap().to_string()
+				},
+				"branch": {
+					"content": branch_content.unwrap_or_default(),
 				},
 				"type": self.doc_type.to_string(),
 				"required_preamble": include_str!("required_preamble.tex")
@@ -204,6 +202,67 @@ impl Branch {
 		}
 		branches.sort_by(|a, b| b.mod_time.cmp(&a.mod_time));
 		Ok(branches)
+	}
+
+	pub fn build(&self, config: &Config) -> Result<()> {
+		let mut branch_content = fs::read_to_string(&self.path)?;
+		if self.format == Format::Markdown {
+			branch_content = String::from_utf8(
+				Command::new("pandoc")
+					.arg("-r")
+					.arg("markdown-auto_identifiers")
+					.arg("-w")
+					.arg("latex")
+					.arg("--pdf-engine")
+					.arg("pdflatex")
+					.arg(&self.path.to_str().unwrap())
+					.stdout(Stdio::piped())
+					.output()?
+					.stdout,
+			)?;
+		}
+
+		let latex = self.inject(
+			config,
+			fs::read_to_string(&self.root_template.path)?,
+			Some(branch_content),
+		)?;
+
+		if Path::new(folders::BUILD).exists() {
+			fs::remove_dir_all(folders::BUILD)?;
+		}
+		fs::create_dir(folders::BUILD)
+			.context("Failed to create temporary directory for building")?;
+		env::set_current_dir(folders::BUILD)
+			.context("Failed to enter temporary directory to build")?;
+		fs::write(files::LATEX_BUILD, latex)?;
+
+		let build_output = Command::new("pdflatex")
+			.arg(files::LATEX_BUILD)
+			.stdout(Stdio::piped())
+			.output()?;
+		if !build_output.status.success() {
+			fs::write(files::FAIL_LOG, build_output.stdout)
+				.context("Failed to write to log file")?;
+			bail!(
+				"Failed to generate PDF. Please check {} in {}",
+				files::FAIL_LOG,
+				folders::BUILD
+			);
+		}
+
+		env::set_current_dir("..")?;
+		fs::create_dir_all(self.pdf_path.parent().unwrap())
+			.context("Failed to create PDF's folder")?;
+		fs::rename(
+			PathBuf::from(folders::BUILD).join(files::PDF_BUILD),
+			&self.pdf_path,
+		)
+		.context("Failed to move output PDF to permanent location")?;
+
+		fs::remove_dir_all(folders::BUILD)?;
+
+		Ok(())
 	}
 }
 
