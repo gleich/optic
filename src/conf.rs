@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::{fmt, fs};
 
 use anyhow::Result;
@@ -23,7 +24,7 @@ pub struct Class {
 	pub teacher: String,
 }
 
-#[derive(PartialEq, Debug, Display, Deserialize, EnumVariantNames, EnumString)]
+#[derive(PartialEq, Debug, Display, Deserialize, EnumVariantNames, EnumString, Clone)]
 pub enum Format {
 	LaTeX,
 	Markdown,
@@ -54,12 +55,24 @@ impl Config {
 }
 
 impl Format {
-	pub fn file_extension(&self) -> &'static str {
+	pub fn extension(&self) -> &'static str {
 		match *self {
 			Format::LaTeX => ".tex",
 			Format::Markdown => ".md",
 		}
 	}
+
+	pub fn from_path(path: &PathBuf) -> Option<Self> {
+		match path.extension().unwrap().to_str().unwrap() {
+			"tex" => Some(Format::LaTeX),
+			"md" => Some(Format::Markdown),
+			_ => None,
+		}
+	}
+}
+
+impl Default for Format {
+	fn default() -> Self { Self::LaTeX }
 }
 
 impl fmt::Display for Class {

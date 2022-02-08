@@ -7,5 +7,6 @@ pub fn setup() -> ArgMatches {
 		.about("🥝 Schoolwork as code")
 		.setting(AppSettings::ArgRequiredElseHelp)
 		.subcommand(App::new("new").about("Create a new branch"))
+		.subcommand(App::new("build").about("Build a branch"))
 		.get_matches()
 }

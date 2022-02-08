@@ -1,7 +1,9 @@
+use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+use std::str::FromStr;
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use chrono::{DateTime, Datelike, Local, Month};
 use handlebars::Handlebars;
 use num_traits::FromPrimitive;
@@ -21,7 +23,7 @@ pub struct Branch {
 	pub path: PathBuf,
 	pub pdf_path: PathBuf,
 	pub imgs_dir: PathBuf,
-	pub branch_template: BranchTemplate,
+	pub branch_template: Option<BranchTemplate>,
 	pub root_template: RootTemplate,
 }
 
@@ -31,7 +33,7 @@ impl Branch {
 		format: Format,
 		doc_type: DocumentType,
 		class: Class,
-		branch_template: BranchTemplate,
+		branch_template: Option<BranchTemplate>,
 		root_template: RootTemplate,
 	) -> Result<Self> {
 		let month_name = Month::from_u32(Local::now().month()).unwrap().name();
@@ -40,7 +42,7 @@ impl Branch {
 				.join(&class.name)
 				.join(month_name)
 				.join(doc_type.to_string())
-				.join(format!("{}{}", name, format.file_extension())),
+				.join(format!("{}{}", name, format.extension())),
 			pdf_path: PathBuf::from(locations::folders::PDFS)
 				.join(&class.name)
 				.join(month_name)
@@ -91,6 +93,11 @@ impl Branch {
 		reg.set_strict_mode(true);
 		reg.register_escape_fn(handlebars::no_escape);
 
+		let branch_template = self
+			.branch_template
+			.clone()
+			.unwrap_or(BranchTemplate::default());
+
 		Ok(reg.render_template(
 			&template_content,
 			&json!({
@@ -105,14 +112,14 @@ impl Branch {
 					"month": time.format("%B").to_string()
 				},
 				"author": config.author,
-				"name": custom_escape(&self.branch_template.name, &self.format),
+				"name": custom_escape(&self.name, &self.format),
 				"class": {
 					"name": custom_escape(&self.class.name, &self.format),
 					"teacher": self.class.teacher,
 				},
 				"branch": {
-					"filename": self.branch_template.path.file_name().unwrap().to_str().unwrap().to_string(),
-					"content": fs::read_to_string(&self.branch_template.path)?,
+					"filename": &branch_template.path.file_name().unwrap().to_str().unwrap().to_string(),
+					"content": fs::read_to_string(&branch_template.path)?,
 				},
 				"root": {
 					"filename": self.root_template.path.file_name().unwrap().to_str().unwrap().to_string()
@@ -120,6 +127,57 @@ impl Branch {
 				"type": self.doc_type.to_string(),
 				"required_preamble": include_str!("required_preamble.tex")
 			}),
+		)?)
+	}
+
+	pub fn parse(path: PathBuf, config: &Config) -> Result<Self> {
+		let format = Format::from_path(&path).unwrap();
+		let mut data = HashMap::new();
+		for line in fs::read_to_string(&path)?.lines() {
+			let trimmed_line = line.trim();
+			let raw_chunks = trimmed_line.split_once(&config.delimiter);
+			if raw_chunks.is_none() {
+				continue;
+			}
+			let chunks = raw_chunks.unwrap();
+			println!("{:?}", data);
+			data.insert(chunks.0.trim().to_string(), chunks.1.trim().to_string());
+			if format == Format::Markdown && trimmed_line.starts_with("-->")
+				|| format == Format::LaTeX && trimmed_line.starts_with("\\fi")
+			{
+				break;
+			}
+		}
+		println!("{:?}", data);
+		let required_keys = ["created", "root"];
+		for key in required_keys {
+			if !data.contains_key(key) {
+				bail!("{} is missing required key: {}", path.display(), key);
+			}
+		}
+
+		let path_chunks = path.iter().rev();
+		let doc_type = path_chunks.clone().nth(1).unwrap().to_str().unwrap();
+		let class_name = path_chunks.clone().nth(3).unwrap().to_str().unwrap();
+
+		Ok(Self::new(
+			path.file_name()
+				.unwrap()
+				.to_str()
+				.unwrap()
+				.strip_suffix(format.extension())
+				.unwrap()
+				.to_string(),
+			format,
+			DocumentType::from_str(doc_type)?,
+			config
+				.classes
+				.iter()
+				.find(|c| c.name == class_name)
+				.unwrap()
+				.clone(),
+			None,
+			RootTemplate::from_filename(data.get("root").unwrap()),
 		)?)
 	}
 }
@@ -145,11 +203,11 @@ mod test {
 					name: String::from("AP Physics 2"),
 					teacher: String::from("Mr. Feynman"),
 				},
-				BranchTemplate {
+				Some(BranchTemplate {
 					path: PathBuf::from("./templates/branch/base.tex.hbs"),
 					name: String::from("base"),
 					format: Format::LaTeX,
-				},
+				}),
 				RootTemplate {
 					path: PathBuf::from("./templates/root/base.tex.hbs"),
 					name: String::from("base")
@@ -166,11 +224,11 @@ mod test {
 				path: PathBuf::from("docs/AP Physics 2/February/Worksheet/Working.tex"),
 				pdf_path: PathBuf::from("pdfs/AP Physics 2/February/Worksheet/Working.pdf"),
 				imgs_dir: PathBuf::from("imgs/AP Physics 2/February/Working"),
-				branch_template: BranchTemplate {
+				branch_template: Some(BranchTemplate {
 					path: PathBuf::from("./templates/branch/base.tex.hbs"),
 					name: String::from("base"),
 					format: Format::LaTeX,
-				},
+				}),
 				root_template: RootTemplate {
 					path: PathBuf::from("./templates/root/base.tex.hbs"),
 					name: String::from("base")
@@ -187,11 +245,11 @@ mod test {
 					name: String::from("Economics Honors"),
 					teacher: String::from("Mr. Buffet"),
 				},
-				BranchTemplate {
+				Some(BranchTemplate {
 					path: PathBuf::from("./templates/branch/base.tex.hbs"),
 					name: String::from("base"),
 					format: Format::LaTeX,
-				},
+				}),
 				RootTemplate {
 					path: PathBuf::from("./templates/root/base.tex.hbs"),
 					name: String::from("base")
@@ -208,11 +266,11 @@ mod test {
 				path: PathBuf::from("docs/Economics Honors/February/Other/Hello World.md"),
 				pdf_path: PathBuf::from("pdfs/Economics Honors/February/Other/Hello World.pdf"),
 				imgs_dir: PathBuf::from("imgs/Economics Honors/February/Hello World"),
-				branch_template: BranchTemplate {
+				branch_template: Some(BranchTemplate {
 					path: PathBuf::from("./templates/branch/base.tex.hbs"),
 					name: String::from("base"),
 					format: Format::LaTeX,
-				},
+				}),
 				root_template: RootTemplate {
 					path: PathBuf::from("./templates/root/base.tex.hbs"),
 					name: String::from("base")

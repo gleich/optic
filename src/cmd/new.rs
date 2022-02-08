@@ -17,7 +17,7 @@ pub fn run() {
 	let formatted_branch = branch
 		.inject(
 			&config,
-			fs::read_to_string(&branch.branch_template.path)
+			fs::read_to_string(branch.branch_template.clone().unwrap().path)
 				.expect("Failed to read from branch file"),
 			Local::now(),
 		)
@@ -95,7 +95,7 @@ fn ask(config: &mut Config) -> Result<Branch> {
 		format,
 		doc_type,
 		class,
-		branch_template,
+		Some(branch_template),
 		root_template,
 	)
 }

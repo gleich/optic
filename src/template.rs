@@ -7,7 +7,7 @@ use anyhow::{bail, Result};
 use crate::conf::Format;
 use crate::locations::folders;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default, Clone)]
 pub struct BranchTemplate {
 	pub path: PathBuf,
 	pub name: String,
@@ -67,6 +67,15 @@ impl RootTemplate {
 				.unwrap()
 				.to_string(),
 			path,
+		}
+	}
+
+	pub fn from_filename(filename: &str) -> Self {
+		Self {
+			name: filename.strip_suffix(".hbs").unwrap().to_string(),
+			path: PathBuf::from(folders::TEMPLATES)
+				.join(folders::ROOT_TEMPLATES)
+				.join(filename),
 		}
 	}
 
