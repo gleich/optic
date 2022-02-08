@@ -32,6 +32,7 @@ pub struct Branch {
 }
 
 impl Branch {
+	#[allow(clippy::too_many_arguments)]
 	pub fn new(
 		name: String,
 		format: Format,
@@ -81,7 +82,7 @@ impl Branch {
 			}
 			let mut output = String::new();
 			for (i, c) in s.chars().enumerate() {
-				if s.chars().nth(i - 1).unwrap_or_default().to_string() == "\\".to_string() {
+				if s.chars().nth(i - 1).unwrap_or_default().to_string() == *"\\" {
 					output.push(c);
 					continue;
 				}
@@ -101,10 +102,7 @@ impl Branch {
 		reg.set_strict_mode(true);
 		reg.register_escape_fn(handlebars::no_escape);
 
-		let branch_template = self
-			.branch_template
-			.clone()
-			.unwrap_or(BranchTemplate::default());
+		let branch_template = self.branch_template.clone().unwrap_or_default();
 
 		Ok(reg.render_template(
 			&template_content,
@@ -166,7 +164,7 @@ impl Branch {
 		let doc_type = path_chunks.clone().nth(1).unwrap().to_str().unwrap();
 		let class_name = path_chunks.clone().nth(3).unwrap().to_str().unwrap();
 
-		Ok(Self::new(
+		Self::new(
 			path.file_name()
 				.unwrap()
 				.to_str()
@@ -192,14 +190,14 @@ impl Branch {
 				)?)
 				.unwrap(),
 			fs::metadata(path)?.modified()?,
-		)?)
+		)
 	}
 
 	pub fn get_all(config: &Config) -> Result<Vec<Self>> {
 		let mut branches: Vec<Self> = Vec::new();
 		for entry in WalkDir::new(folders::BRANCHES) {
 			let entry = entry?;
-			let extension = Format::from_path(&entry.path().to_path_buf());
+			let extension = Format::from_path(entry.path());
 			if entry.file_type().is_file() && extension.is_some() {
 				branches.push(Self::parse(entry.path().to_path_buf(), config)?)
 			}

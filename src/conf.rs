@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 use std::{fmt, fs};
 
 use anyhow::Result;
@@ -66,7 +66,7 @@ impl Format {
 		}
 	}
 
-	pub fn from_path(path: &PathBuf) -> Option<Self> {
+	pub fn from_path(path: &Path) -> Option<Self> {
 		match path.extension().unwrap_or_default().to_str().unwrap() {
 			"tex" => Some(Format::LaTeX),
 			"md" => Some(Format::Markdown),
