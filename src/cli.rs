@@ -10,5 +10,6 @@ pub fn setup() -> ArgMatches {
 		.subcommand(App::new("build").about("Build a branch"))
 		.subcommand(App::new("watch").about("View a branch and build it on change"))
 		.subcommand(App::new("open").about("Open a branch in an editor"))
+		.subcommand(App::new("reveal").about("Open a branch PDF in finder"))
 		.get_matches()
 }
