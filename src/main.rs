@@ -12,6 +12,7 @@ fn main() {
 		Some(("new", _)) => cmd::new::run(),
 		Some(("build", _)) => cmd::build::run(),
 		Some(("watch", _)) => cmd::watch::run(),
+		Some(("open", _)) => cmd::open::run(),
 		_ => unreachable!(),
 	}
 }

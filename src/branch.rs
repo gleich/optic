@@ -266,15 +266,24 @@ impl Branch {
 	}
 
 	pub fn view(&self, config: &Config, blocking: bool) -> Result<()> {
-		let view_list = config.view_with.as_ref().unwrap();
-		let mut cmd = Command::new(view_list.get(0).unwrap());
-		cmd.args(view_list.iter().skip(1));
+		let view_with = config.view_with.as_ref().unwrap();
+		let mut cmd = Command::new(view_with.get(0).unwrap());
+		cmd.args(view_with.iter().skip(1));
 		cmd.arg(&self.pdf_path);
 		if blocking {
 			cmd.output()?;
 		} else {
 			cmd.spawn()?;
 		}
+		Ok(())
+	}
+
+	pub fn open(&self, config: &Config) -> Result<()> {
+		let open_with = config.open_with.as_ref().unwrap();
+		Command::new(open_with.get(0).unwrap())
+			.args(open_with.iter().skip(1))
+			.arg(&self.path)
+			.output()?;
 		Ok(())
 	}
 }
