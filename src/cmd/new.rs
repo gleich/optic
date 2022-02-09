@@ -10,6 +10,7 @@ use strum::VariantNames;
 
 use crate::branch::Branch;
 use crate::conf::{Class, Config, DocumentType, Format};
+use crate::out::task;
 use crate::template::{BranchTemplate, RootTemplate};
 
 pub fn run() {
@@ -23,11 +24,13 @@ pub fn run() {
 			None,
 		)
 		.expect("Failed to inject variables into branch");
-	fs::create_dir_all(branch.path.parent().unwrap())
-		.expect("Failed to create parent folder for new branch file");
-	fs::create_dir_all(branch.imgs_dir).expect("Failed to create images directory for branch");
-	fs::write(&branch.path, formatted_branch).expect("Failed to format branch");
-	println!("\nCreated branch file: {}", branch.path.display());
+
+	task("Creating branch", || {
+		fs::create_dir_all(branch.path.parent().unwrap())
+			.expect("Failed to create parent folder for new branch file");
+		fs::create_dir_all(branch.imgs_dir).expect("Failed to create images directory for branch");
+		fs::write(&branch.path, formatted_branch).expect("Failed to format branch");
+	})
 }
 
 fn ask(config: &mut Config) -> Result<Branch> {

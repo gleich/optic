@@ -1,18 +1,20 @@
 use crate::branch::Branch;
 use crate::conf::Config;
-use crate::out::Job;
+use crate::out::task;
 
 pub fn run() {
 	let config = Config::read().expect("Failed to read from configuration file");
 
-	let mut job = Job::new("Collecting branches");
-	job.start();
-	let branches = Branch::get_all(&config).expect("Failed to get all branches");
-	job.done();
+	let mut branches = Vec::new();
+	task("Collecting branches", || {
+		branches = Branch::get_all(&config).expect("Failed to get all branches");
+	});
 
-	let branch = branches.get(0).unwrap();
-	job.set_task("Building branch");
-	job.start();
-	branch.build(&config).expect("Failed to build branch");
-	job.done();
+	task("Building branch", || {
+		branches
+			.get(0)
+			.unwrap()
+			.build(&config)
+			.expect("Failed to build");
+	});
 }
