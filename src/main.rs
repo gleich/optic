@@ -11,6 +11,7 @@ fn main() {
 	match matches.subcommand() {
 		Some(("new", _)) => cmd::new::run(),
 		Some(("build", _)) => cmd::build::run(),
+		Some(("watch", _)) => cmd::watch::run(),
 		_ => unreachable!(),
 	}
 }

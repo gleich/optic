@@ -264,6 +264,19 @@ impl Branch {
 
 		Ok(())
 	}
+
+	pub fn view(&self, config: &Config, blocking: bool) -> Result<()> {
+		let view_list = config.view_with.as_ref().unwrap();
+		let mut cmd = Command::new(view_list.get(0).unwrap());
+		cmd.args(view_list.iter().skip(1));
+		cmd.arg(&self.pdf_path);
+		if blocking {
+			cmd.output()?;
+		} else {
+			cmd.spawn()?;
+		}
+		Ok(())
+	}
 }
 
 #[cfg(test)]

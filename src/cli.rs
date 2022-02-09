@@ -8,5 +8,6 @@ pub fn setup() -> ArgMatches {
 		.setting(AppSettings::ArgRequiredElseHelp)
 		.subcommand(App::new("new").about("Create a new branch"))
 		.subcommand(App::new("build").about("Build a branch"))
+		.subcommand(App::new("watch").about("View a branch and build it on change"))
 		.get_matches()
 }

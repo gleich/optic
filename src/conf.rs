@@ -16,6 +16,7 @@ pub struct Config {
 	#[serde(default = "defaults::config_default_format")]
 	pub default_format: Format,
 	pub classes: Vec<Class>,
+	pub view_with: Option<Vec<String>>,
 }
 
 #[derive(Deserialize, Debug, PartialEq, Clone)]
@@ -109,6 +110,7 @@ mod test {
 				author: String::from("Matt Gleich"),
 				delimiter: String::from(">"),
 				open_with: None,
+				view_with: None,
 				default_format: Format::Markdown,
 				classes: vec![Class {
 					name: String::from("AP Physics 2"),
@@ -134,6 +136,7 @@ mod test {
 				author: String::from("Matt Gleich"),
 				delimiter: String::from(">"),
 				open_with: Some(vec![String::from("code")]),
+				view_with: None,
 				default_format: Format::LaTeX,
 				classes: vec![Class {
 					name: String::from("AP Physics 2"),
@@ -164,6 +167,7 @@ mod test {
 				author: String::from("Matt Gleich"),
 				delimiter: String::from(">"),
 				open_with: Some(vec![String::from("code")]),
+				view_with: None,
 				default_format: Format::LaTeX,
 				classes: vec![
 					Class {
