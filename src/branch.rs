@@ -123,7 +123,7 @@ impl Branch {
 					"teacher": self.class.teacher,
 				},
 				"root": {
-					"filename": self.root_template.path.file_name().unwrap().to_str().unwrap().to_string()
+					"filename": self.root_template.path.file_name().unwrap().to_str().unwrap().to_string(),
 				},
 				"branch": {
 					"content": branch_content.unwrap_or_default(),
@@ -180,7 +180,7 @@ impl Branch {
 				.unwrap()
 				.clone(),
 			None,
-			RootTemplate::from_filename(data.get("root").unwrap()),
+			RootTemplate::from_filename(&format!("{}.hbs", data.get("root").unwrap())),
 			Local
 				.from_local_date(&NaiveDate::parse_from_str(
 					data.get("created").unwrap(),

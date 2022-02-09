@@ -14,8 +14,8 @@ use crate::out::task;
 use crate::template::{BranchTemplate, RootTemplate};
 
 pub fn run() {
-	let mut config = Config::read().expect("Failed to read from config file");
-	let branch = ask(&mut config).expect("Failed to ask user about branch");
+	let config = Config::read().expect("Failed to read from config file");
+	let branch = ask(&config).expect("Failed to ask user about branch");
 	let formatted_branch = branch
 		.inject(
 			&config,
@@ -33,7 +33,7 @@ pub fn run() {
 	})
 }
 
-fn ask(config: &mut Config) -> Result<Branch> {
+fn ask(config: &Config) -> Result<Branch> {
 	let theme = ColorfulTheme::default();
 	let mut branch_templates = BranchTemplate::get_all()?;
 	let mut root_templates = RootTemplate::get_all()?;
@@ -66,17 +66,16 @@ fn ask(config: &mut Config) -> Result<Branch> {
 			.unwrap(),
 	)?;
 
-	let class = config.classes.swap_remove(
+	let mut active_classes = config
+		.classes
+		.iter()
+		.filter(|c| c.active)
+		.map(|c| c.clone())
+		.collect::<Vec<Class>>();
+	let class = active_classes.swap_remove(
 		FuzzySelect::with_theme(&theme)
 			.with_prompt("Class")
-			.items(
-				config
-					.classes
-					.iter()
-					.filter(|c| c.active)
-					.collect::<Vec<&Class>>()
-					.as_slice(),
-			)
+			.items(active_classes.as_slice())
 			.default(0)
 			.interact()?,
 	);

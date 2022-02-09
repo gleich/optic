@@ -72,7 +72,10 @@ impl RootTemplate {
 
 	pub fn from_filename(filename: &str) -> Self {
 		Self {
-			name: filename.strip_suffix(".hbs").unwrap().to_string(),
+			name: filename
+				.strip_suffix(".hbs")
+				.unwrap_or(filename)
+				.to_string(),
 			path: PathBuf::from(folders::TEMPLATES)
 				.join(folders::ROOT_TEMPLATES)
 				.join(filename),
