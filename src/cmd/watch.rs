@@ -22,11 +22,18 @@ pub fn run() {
 		.watch(&branch.path, notify::RecursiveMode::NonRecursive)
 		.expect("Failed to watch recent branch file");
 
-	task(&format!("Opening \"{}\" with viewer", branch.name), || {
-		branch
-			.view(&config, false)
-			.expect("Failed to open branch with viewer");
-	});
+	task(
+		&format!(
+			"Opening \"{}\" with {}",
+			branch.name,
+			config.view_with.as_ref().unwrap().get(0).unwrap()
+		),
+		|| {
+			branch
+				.view(&config, false)
+				.expect("Failed to open branch with viewer");
+		},
+	);
 
 	loop {
 		let event = rx.recv().expect("Failed to receive event");
