@@ -1,10 +1,10 @@
 use clap::{App, AppSettings, ArgMatches};
 
 pub fn setup() -> ArgMatches {
-	App::new("kiwi")
+	App::new("optic")
 		.version("1.0.0")
 		.author("Matt Gleich <email@mattglei.ch>")
-		.about("🥝 Schoolwork as code")
+		.about("Schoolwork as code")
 		.setting(AppSettings::ArgRequiredElseHelp)
 		.subcommand(App::new("new").about("Create a new branch"))
 		.subcommand(App::new("build").about("Build a branch"))

@@ -10,7 +10,7 @@ pub mod folders {
 }
 
 pub mod files {
-	pub const CONFIG: &str = "kiwi.toml";
+	pub const CONFIG: &str = "optic.toml";
 	pub const LATEX_BUILD: &str = "main.tex";
 	pub const PDF_BUILD: &str = "main.pdf";
 	pub const FAIL_LOG: &str = "failure.log";

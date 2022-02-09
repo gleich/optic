@@ -1,13 +1,12 @@
 [package]
-name = "kiwi-cli"
+name = "optic"
 version = "1.0.0"
-description = "🏫 Schoolwork as code"
+description = "Schoolwork as code"
 authors = ["Matt Gleich <email@mattglei.ch>"]
 edition = "2021"
-repository = "https://github.com/gleich/kiwi/"
-homepage = "https://kiwi.docs.mattglei.ch"
+repository = "https://github.com/gleich/optic/"
 license = "MPL-2.0"
-keywords = ["kiwi", "cli", "latex", "markdown"]
+keywords = ["optic", "kiwi", "cli", "latex", "markdown"]
 
 [dependencies]
 serde = { version = "1.0.136", features = ["derive"] }
@@ -27,7 +26,3 @@ colorful = "0.2.1"
 term_cursor = "0.2.1"
 notify = "4.0.17"
 chrono-humanize = "0.2.1"
-
-[[bin]]
-name = "kiwi"
-path = "src/main.rs"

@@ -20,5 +20,5 @@ This PR resolves #22
 -->
 
 <!--
-Thank you for your contribution to kiwi!
+Thank you for your contribution to optic!
 -->
