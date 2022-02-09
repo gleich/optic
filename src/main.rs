@@ -1,25 +1,18 @@
-use cmds::{build, check, commit, new, setup};
-use out::custom_dialoguer_theme;
-
-mod branches;
+mod branch;
 mod cli;
-mod cmds;
+mod cmd;
 mod conf;
-mod inject;
+mod locations;
 mod out;
+mod template;
 
 fn main() {
-	let prompt_theme = custom_dialoguer_theme();
-	let matches = cli::setup().expect("Failed to setup CLI");
-	if matches.is_present("setup") {
-		setup::run(&prompt_theme);
-	} else if matches.is_present("new") {
-		new::run(matches.subcommand_matches("new").unwrap(), &prompt_theme);
-	} else if matches.is_present("build") {
-		build::run(matches.subcommand_matches("build").unwrap());
-	} else if matches.is_present("check") {
-		check::run(&prompt_theme);
-	} else if matches.is_present("commit") {
-		commit::run();
+	let matches = cli::setup();
+	match matches.subcommand() {
+		Some(("new", _)) => cmd::new::run(),
+		Some(("build", _)) => cmd::build::run(),
+		Some(("watch", _)) => cmd::watch::run(),
+		Some(("open", _)) => cmd::open::run(),
+		_ => unreachable!(),
 	}
 }

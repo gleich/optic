@@ -1,59 +1,40 @@
-use std::fs;
 use std::path::Path;
+use std::{fmt, fs};
 
-use anyhow::{Context, Result};
-use serde::{Deserialize, Serialize};
+use anyhow::Result;
+use serde::Deserialize;
 use strum_macros::{Display, EnumString, EnumVariantNames};
 
-pub const FNAME: &str = "kiwi.toml";
-pub const TEMPLATES_DIR: &str = "templates";
+use crate::locations;
 
-#[derive(Serialize, Deserialize, Debug, Default)]
-#[serde(deny_unknown_fields)]
+#[derive(Deserialize, Debug, PartialEq)]
 pub struct Config {
-	pub name: String,
-	pub school: School,
-	#[serde(skip_serializing)]
-	#[serde(default = "default_delimiter")]
+	pub author: String,
+	#[serde(default = "defaults::config_delimiter")]
 	pub delimiter: String,
-	pub open_with: Option<Open>,
-	#[serde(skip_serializing)]
-	#[serde(default)]
+	pub open_with: Option<Vec<String>>,
+	#[serde(default = "defaults::config_default_format")]
 	pub default_format: Format,
 	pub classes: Vec<Class>,
+	pub view_with: Option<Vec<String>>,
 }
 
-// Defaults
-fn default_delimiter() -> String { String::from(">") }
-fn default_active() -> bool { true }
-impl Default for Format {
-	fn default() -> Self { Format::Markdown }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Open {
-	pub command: String,
-	pub args: Option<Vec<String>>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq, Clone)]
 pub struct Class {
 	pub name: String,
 	pub teacher: String,
-	#[serde(default = "default_active", skip_serializing)]
+	#[serde(default = "defaults::class_active")]
 	pub active: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct School {
-	pub level: String,
-	// type is a keyword in rust so it can't be the name of the variant
-	#[serde(rename = "type")]
-	pub type_name: String,
+#[derive(PartialEq, Debug, Display, Deserialize, EnumVariantNames, EnumString, Clone)]
+pub enum Format {
+	LaTeX,
+	Markdown,
 }
 
-#[derive(EnumVariantNames, Display, EnumString, PartialEq, Debug)]
-pub enum DocType {
+#[derive(PartialEq, Debug, Display, Deserialize, EnumVariantNames, EnumString)]
+pub enum DocumentType {
 	Worksheet,
 	Note,
 	Assessment,
@@ -62,53 +43,146 @@ pub enum DocType {
 	Other,
 }
 
-#[derive(EnumVariantNames, Display, Debug, Serialize, Deserialize, EnumString, PartialEq)]
-pub enum Format {
-	LaTeX,
-	Markdown,
+mod defaults {
+	use super::Format;
+
+	pub fn config_delimiter() -> String { String::from(">") }
+	pub fn config_default_format() -> Format { Format::Markdown }
+
+	pub fn class_active() -> bool { true }
 }
 
-#[derive(EnumVariantNames, Display, PartialEq, Debug, EnumString)]
-pub enum TemplateType {
-	#[strum(serialize = "root")]
-	Root,
-	#[strum(serialize = "branch")]
-	Branch,
-}
-
-/// Read from the config file.
-/// Default parameter is to have the function return a blank config struct if the file doesn't exist/is blank.
-pub fn read(default: bool) -> Result<Config> {
-	let loc = Path::new(FNAME);
-	if !loc.exists() && default {
-		return Ok(Default::default());
+impl Config {
+	pub fn read() -> Result<Config> {
+		let content = fs::read_to_string(locations::files::CONFIG)?;
+		Ok(toml::from_str::<Config>(&content)?)
 	}
-	let contents = fs::read_to_string(loc).context("Failed to read from configuration file")?;
-	Ok(toml::from_str(&contents).context("Failed to parse toml")?)
 }
 
-/// Get a list of all the template files for a certain template type
-pub fn list_templates(format: &Format, group: &TemplateType) -> Result<Vec<String>> {
-	let template_fs_objects = fs::read_dir(Path::new(TEMPLATES_DIR).join(group.to_string()))
-		.context("Failed to get templates")?;
-
-	let mut file_names = Vec::new();
-	for entry in template_fs_objects {
-		let fs_object =
-			entry.context("Failed to get file system object from read directory call")?;
-		if fs_object
-			.file_type()
-			.context("Failed to get file type")?
-			.is_file()
-		{
-			let file_name = fs_object.file_name().to_str().unwrap().to_string();
-			if file_name.ends_with("tex.hbs") && format == &Format::LaTeX {
-				file_names.push(file_name);
-			} else if file_name.ends_with("md.hbs") && format == &Format::Markdown {
-				file_names.push(file_name);
-			}
+impl Format {
+	pub fn extension(&self) -> &'static str {
+		match *self {
+			Format::LaTeX => ".tex",
+			Format::Markdown => ".md",
 		}
 	}
 
-	Ok(file_names)
+	pub fn from_path(path: &Path) -> Option<Self> {
+		match path.extension().unwrap_or_default().to_str().unwrap() {
+			"tex" => Some(Format::LaTeX),
+			"md" => Some(Format::Markdown),
+			_ => None,
+		}
+	}
+}
+
+impl Default for Format {
+	fn default() -> Self { Self::LaTeX }
+}
+
+impl fmt::Display for Class {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{} ({})", self.name, self.teacher)
+	}
+}
+
+#[cfg(test)]
+mod test {
+	use toml::de::Error;
+
+	use super::Format;
+	use crate::conf::{Class, Config};
+
+	#[test]
+	fn read_config() -> Result<(), Error> {
+		// Super basic config file
+		assert_eq!(
+			toml::from_str::<Config>(
+				"
+        author = \"Matt Gleich\"
+
+        [[classes]]
+        name = \"AP Physics 2\"
+        teacher = \"Mr. Feynman\"
+    "
+			)?,
+			Config {
+				author: String::from("Matt Gleich"),
+				delimiter: String::from(">"),
+				open_with: None,
+				view_with: None,
+				default_format: Format::Markdown,
+				classes: vec![Class {
+					name: String::from("AP Physics 2"),
+					teacher: String::from("Mr. Feynman"),
+					active: true
+				}],
+			}
+		);
+		// Custom default_format
+		assert_eq!(
+			toml::from_str::<Config>(
+				"
+        author = \"Matt Gleich\"
+        open_with = [\"code\"]
+        default_format = \"LaTeX\"
+
+        [[classes]]
+        name = \"AP Physics 2\"
+        teacher = \"Mr. Feynman\"
+    "
+			)?,
+			Config {
+				author: String::from("Matt Gleich"),
+				delimiter: String::from(">"),
+				open_with: Some(vec![String::from("code")]),
+				view_with: None,
+				default_format: Format::LaTeX,
+				classes: vec![Class {
+					name: String::from("AP Physics 2"),
+					teacher: String::from("Mr. Feynman"),
+					active: true
+				}],
+			}
+		);
+		// Multiple classes
+		assert_eq!(
+			toml::from_str::<Config>(
+				"
+        author = \"Matt Gleich\"
+        open_with = [\"code\"]
+        default_format = \"LaTeX\"
+
+        [[classes]]
+        name = \"AP Physics 2\"
+        teacher = \"Mr. Feynman\"
+
+        [[classes]]
+        name = \"AP Chemistry 2\"
+        teacher = \"Mr. White\"
+		active = false
+    "
+			)?,
+			Config {
+				author: String::from("Matt Gleich"),
+				delimiter: String::from(">"),
+				open_with: Some(vec![String::from("code")]),
+				view_with: None,
+				default_format: Format::LaTeX,
+				classes: vec![
+					Class {
+						name: String::from("AP Physics 2"),
+						teacher: String::from("Mr. Feynman"),
+						active: true
+					},
+					Class {
+						name: String::from("AP Chemistry 2"),
+						teacher: String::from("Mr. White"),
+						active: false
+					}
+				],
+			}
+		);
+		Ok(())
+	}
 }

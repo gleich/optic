@@ -1,12 +1,10 @@
 <!-- DO NOT REMOVE - contributor_list:data:start:["gleich"]:end -->
 
-# kiwi
+# optic
 
-[![lint](https://github.com/gleich/kiwi/actions/workflows/lint.yml/badge.svg)](https://github.com/gleich/kiwi/actions/workflows/lint.yml)
-[![build](https://github.com/gleich/kiwi/actions/workflows/build.yml/badge.svg)](https://github.com/gleich/kiwi/actions/workflows/build.yml)
-[![test](https://github.com/gleich/kiwi/actions/workflows/test.yml/badge.svg)](https://github.com/gleich/kiwi/actions/workflows/test.yml)
-
-See the documentation over at [kiwi.docs.mattglei.ch](https://kiwi.docs.mattglei.ch)
+[![lint](https://github.com/gleich/optic/actions/workflows/lint.yml/badge.svg)](https://github.com/gleich/optic/actions/workflows/lint.yml)
+[![build](https://github.com/gleich/optic/actions/workflows/build.yml/badge.svg)](https://github.com/gleich/optic/actions/workflows/build.yml)
+[![test](https://github.com/gleich/optic/actions/workflows/test.yml/badge.svg)](https://github.com/gleich/optic/actions/workflows/test.yml)
 
 ## 🙌 Contributing
 
