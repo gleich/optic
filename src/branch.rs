@@ -99,6 +99,13 @@ impl Branch {
 		}
 
 		let ordinal_suffix = Ordinal(self.creation_time.day()).suffix();
+		let format = if (self.format == Format::Markdown && branch_content.is_some())
+			|| self.format == Format::LaTeX
+		{
+			Format::LaTeX
+		} else {
+			Format::Markdown
+		};
 		let mut reg = Handlebars::new();
 		reg.register_escape_fn(handlebars::no_escape);
 
@@ -109,27 +116,27 @@ impl Branch {
 					"simple_date": self.creation_time.format("%F").to_string(),
 					"day": self.creation_time.day(),
 					"year": self.creation_time.year(),
-					"date": match (&self.format, branch_content.is_some()) {
-						(Format::Markdown, false) => self.creation_time.format(&format!("%A, %B %e^{}^, %Y", ordinal_suffix)).to_string(),
-						(Format::Markdown, true) => self.creation_time.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string(),
-						(Format::LaTeX, false | true) => self.creation_time.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
+					"date": match format {
+						Format::Markdown => self.creation_time.format(&format!("%A, %B %e^{}^, %Y", ordinal_suffix)).to_string(),
+						Format::LaTeX => self.creation_time.format(&format!("%A, %B %e\\textsuperscript{{{}}}, %Y", ordinal_suffix)).to_string()
 					},
 					"month": self.creation_time.format("%B").to_string()
 				},
 				"author": config.author,
-				"name": custom_escape(&self.name, &self.format),
+				"name": custom_escape(&self.name, &format),
 				"class": {
-					"name": custom_escape(&self.class.name, &self.format),
+					"name": custom_escape(&self.class.name, &format),
 					"teacher": self.class.teacher,
 				},
 				"root": {
-					"filename": self.root_template.path.file_name().unwrap().to_str().unwrap().to_string(),
+					"filename": self.root_template.path.file_name().unwrap().to_str().unwrap().to_string().strip_suffix(".hbs").unwrap(),
 				},
 				"branch": {
 					"content": branch_content.unwrap_or_default(),
 				},
 				"type": self.doc_type.to_string(),
-				"required_preamble": include_str!("required_preamble.tex")
+				"required_preamble": include_str!("required_preamble.tex"),
+				"img_dir": custom_escape(self.imgs_dir.to_str().unwrap(), &format)
 			}),
 		)?)
 	}
