@@ -28,9 +28,23 @@ pub fn run() {
 	task("Creating branch", || {
 		fs::create_dir_all(branch.path.parent().unwrap())
 			.expect("Failed to create parent folder for new branch file");
-		fs::create_dir_all(branch.imgs_dir).expect("Failed to create images directory for branch");
+		fs::create_dir_all(&branch.imgs_dir).expect("Failed to create images directory for branch");
 		fs::write(&branch.path, formatted_branch).expect("Failed to format branch");
-	})
+	});
+
+	if config.open_with.is_some() {
+		task(
+			&format!(
+				"Opening with {}",
+				config.open_with.as_ref().unwrap().get(0).unwrap()
+			),
+			|| {
+				branch
+					.open(&config)
+					.expect("Failed to open branch in editor");
+			},
+		);
+	}
 }
 
 fn ask(config: &Config) -> Result<Branch> {
