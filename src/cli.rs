@@ -11,5 +11,8 @@ pub fn setup() -> ArgMatches {
 		.subcommand(App::new("watch").about("View a branch and build it on change"))
 		.subcommand(App::new("open").about("Open a branch in an editor"))
 		.subcommand(App::new("reveal").about("Open a branch PDF in finder"))
+		.subcommand(
+			App::new("check").about("Check to see if any branches don't have up-to-date PDFs"),
+		)
 		.get_matches()
 }

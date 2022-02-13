@@ -14,6 +14,7 @@ fn main() {
 		Some(("watch", _)) => cmd::watch::run(),
 		Some(("open", _)) => cmd::open::run(),
 		Some(("reveal", _)) => cmd::reveal::run(),
+		Some(("check", _)) => cmd::check::run(),
 		_ => unreachable!(),
 	}
 }
