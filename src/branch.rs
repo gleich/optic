@@ -136,7 +136,7 @@ impl Branch {
 				},
 				"type": self.doc_type.to_string(),
 				"required_preamble": include_str!("required_preamble.tex"),
-				"imgs_dir": custom_escape(self.imgs_dir.to_str().unwrap(), &format)
+				"imgs_dir": format!("{{{}/}}", custom_escape(Path::new("..").join(&self.imgs_dir).to_str().unwrap(), &format))
 			}),
 		)?)
 	}
