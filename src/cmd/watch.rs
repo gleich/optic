@@ -46,17 +46,21 @@ pub fn run() {
 						.bg_yellow()
 						.black()
 				);
-				branch.build(&config).expect("Failed to build branch file");
-				println!(
-					"  {}",
-					format!(
-						"BUILD DONE after {}",
-						HumanTime::from(Local::now() - start)
-							.to_text_en(Accuracy::Precise, Tense::Present)
+				let result = branch.build(&config);
+				if result.is_err() {
+					println!("  {}", "BUILD FAILED".bg_red().white());
+				} else {
+					println!(
+						"  {}",
+						format!(
+							"BUILD DONE after {}",
+							HumanTime::from(Local::now() - start)
+								.to_text_en(Accuracy::Precise, Tense::Present)
+						)
+						.green()
+						.underlined()
 					)
-					.green()
-					.underlined()
-				)
+				}
 			}
 			DebouncedEvent::NoticeRemove(path) => {
 				println!("\n{} has been deleted. Stopping watch", path.display());
