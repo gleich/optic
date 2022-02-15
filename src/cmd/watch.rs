@@ -23,9 +23,12 @@ pub fn run() {
 		.expect("Failed to watch recent branch file");
 
 	if !branch.pdf_path.exists() {
-		task(&format!("Building starter PDF for {}", branch.name), || {
-			branch.build(&config).expect("Failed to build branch");
-		})
+		task(
+			&format!("Building starter PDF for \"{}\"", branch.name),
+			|| {
+				branch.build(&config).expect("Failed to build branch");
+			},
+		)
 	}
 
 	task(
@@ -48,7 +51,7 @@ pub fn run() {
 				let start = Local::now();
 				println!(
 					"\n  {}",
-					format!("BUILD INCOMING at {}", start.format("%x %r"))
+					format!(" BUILD INCOMING at {} ", start.format("%x %r"))
 						.bg_yellow()
 						.black()
 				);
@@ -57,7 +60,7 @@ pub fn run() {
 					println!("  {}", "BUILD FAILED".bg_red().white());
 				} else {
 					println!(
-						"  {}",
+						"   {}",
 						format!(
 							"BUILD DONE after {}",
 							HumanTime::from(Local::now() - start)
