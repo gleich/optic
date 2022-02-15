@@ -22,6 +22,12 @@ pub fn run() {
 		.watch(&branch.path, notify::RecursiveMode::NonRecursive)
 		.expect("Failed to watch recent branch file");
 
+	if !branch.pdf_path.exists() {
+		task(&format!("Building starter PDF for {}", branch.name), || {
+			branch.build(&config).expect("Failed to build branch");
+		})
+	}
+
 	task(
 		&format!(
 			"Opening \"{}\" with {}",
