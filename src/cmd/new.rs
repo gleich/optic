@@ -84,7 +84,7 @@ fn ask(config: &Config) -> Result<Branch> {
 		.classes
 		.iter()
 		.filter(|c| c.active)
-		.map(|c| c.clone())
+		.cloned()
 		.collect::<Vec<Class>>();
 	let class = active_classes.swap_remove(
 		FuzzySelect::with_theme(&theme)

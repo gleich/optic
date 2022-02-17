@@ -118,7 +118,7 @@ pub fn ask(missing_pdfs: &Vec<&Branch>, old_pdfs: &Vec<&Branch>) -> Result<(bool
 pub fn build_all(config: &Config, branches: Vec<&Branch>) {
 	for branch in branches {
 		task(&format!("Building {}", branch.path.display()), || {
-			branch.build(&config).expect("Failed to build branch");
+			branch.build(config).expect("Failed to build branch");
 		})
 	}
 }
