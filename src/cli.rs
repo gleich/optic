@@ -1,18 +1,22 @@
-use clap::{App, AppSettings, ArgMatches};
+use clap::{Arg, Command};
+use clap_complete::Shell;
 
-pub fn setup() -> ArgMatches {
-	App::new("optic")
+pub fn setup() -> Command<'static> {
+	Command::new("optic")
 		.version("1.0.0")
 		.author("Matt Gleich <email@mattglei.ch>")
 		.about("Schoolwork as code")
-		.setting(AppSettings::ArgRequiredElseHelp)
-		.subcommand(App::new("new").about("Create a new branch"))
-		.subcommand(App::new("build").about("Build a branch"))
-		.subcommand(App::new("watch").about("View a branch and build it on change"))
-		.subcommand(App::new("open").about("Open a branch in an editor"))
-		.subcommand(App::new("reveal").about("Open a branch PDF in finder"))
+		.arg_required_else_help(true)
+		.subcommand(Command::new("new").about("Create a new branch"))
+		.subcommand(Command::new("build").about("Build a branch"))
+		.subcommand(Command::new("watch").about("View a branch and build it on change"))
+		.subcommand(Command::new("open").about("Open a branch in an editor"))
+		.subcommand(Command::new("reveal").about("Open a branch PDF in finder"))
 		.subcommand(
-			App::new("check").about("Check to see if any branches don't have up-to-date PDFs"),
+			Command::new("check").about("Check to see if any branches don't have up-to-date PDFs"),
 		)
-		.get_matches()
+		.subcommand(
+			Command::new("completion")
+				.arg(Arg::new("shell").possible_values(Shell::possible_values())),
+		)
 }
