@@ -17,6 +17,7 @@ pub fn setup() -> Command<'static> {
 		)
 		.subcommand(
 			Command::new("completion")
+				.about("Generate shell completion for optic")
 				.arg(Arg::new("shell").possible_values(Shell::possible_values())),
 		)
 }
