@@ -15,6 +15,7 @@ pub fn setup() -> Command<'static> {
 		.subcommand(
 			Command::new("check").about("Check to see if any branches don't have up-to-date PDFs"),
 		)
+		.subcommand(Command::new("trash").about("Move branch to trash can"))
 		.subcommand(
 			Command::new("completion")
 				.about("Generate shell completion for optic")

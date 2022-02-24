@@ -15,6 +15,7 @@ fn main() {
 		Some(("open", _)) => cmd::open::run(),
 		Some(("reveal", _)) => cmd::reveal::run(),
 		Some(("check", _)) => cmd::check::run(),
+		Some(("trash", _)) => cmd::trash::run(),
 		Some(("completion", args)) => cmd::completion::run(args),
 		_ => unreachable!(),
 	}
