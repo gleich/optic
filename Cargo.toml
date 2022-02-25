@@ -10,8 +10,8 @@ keywords = ["optic", "kiwi", "cli", "latex", "markdown"]
 
 [dependencies]
 serde = { version = "1.0.136", features = ["derive"] }
-strum = "0.23.0"
-strum_macros = "0.23.0"
+strum = "0.24.0"
+strum_macros = "0.24.0"
 toml = "0.5.8"
 anyhow = "1.0.53"
 clap = "3.0.13"
