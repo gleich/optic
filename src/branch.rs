@@ -211,8 +211,9 @@ impl Branch {
 		Ok(branches)
 	}
 
-	pub fn build(&self, config: &Config) -> Result<()> {
+	pub fn build(&self, config: &Config, latexmk: &bool) -> Result<()> {
 		let mut branch_content = fs::read_to_string(&self.path)?;
+		let build_engine = if *latexmk { "latexmk" } else { "pdflatex" };
 		if self.format == Format::Markdown {
 			branch_content = String::from_utf8(
 				Command::new("pandoc")
@@ -221,7 +222,7 @@ impl Branch {
 					.arg("-w")
 					.arg("latex")
 					.arg("--pdf-engine")
-					.arg("pdflatex")
+					.arg(build_engine)
 					.arg(&self.path.to_str().unwrap())
 					.stdout(Stdio::piped())
 					.output()?
@@ -244,8 +245,9 @@ impl Branch {
 			.context("Failed to enter temporary directory to build")?;
 		fs::write(files::LATEX_BUILD, latex)?;
 
-		let build_output = Command::new("pdflatex")
+		let build_output = Command::new(build_engine)
 			.arg(files::LATEX_BUILD)
+			.arg(if *latexmk { "-pdf" } else { "" })
 			.stdout(Stdio::piped())
 			.output()?;
 		if !build_output.status.success() {

@@ -26,7 +26,9 @@ pub fn run() {
 		task(
 			&format!("Building starter PDF for \"{}\"", branch.name),
 			|| {
-				branch.build(&config).expect("Failed to build branch");
+				branch
+					.build(&config, &config.latexmk)
+					.expect("Failed to build branch");
 			},
 		)
 	}
@@ -55,7 +57,7 @@ pub fn run() {
 						.bg_yellow()
 						.black()
 				);
-				let result = branch.build(&config);
+				let result = branch.build(&config, &config.latexmk);
 				if result.is_err() {
 					println!("  {}", "BUILD FAILED".bg_red().white());
 				} else {

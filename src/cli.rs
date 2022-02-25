@@ -8,7 +8,14 @@ pub fn setup() -> Command<'static> {
 		.about("Schoolwork as code")
 		.arg_required_else_help(true)
 		.subcommand(Command::new("new").about("Create a new branch"))
-		.subcommand(Command::new("build").about("Build a branch"))
+		.subcommand(
+			Command::new("build").about("Build a branch").arg(
+				Arg::new("latexmk")
+					.long("latexmk")
+					.help("Use latexmk instead of pdflatex to build the PDF")
+					.takes_value(false),
+			),
+		)
 		.subcommand(Command::new("watch").about("View a branch and build it on change"))
 		.subcommand(Command::new("open").about("Open a branch in an editor"))
 		.subcommand(Command::new("reveal").about("Open a branch PDF in finder"))

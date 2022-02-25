@@ -17,6 +17,8 @@ pub struct Config {
 	pub default_format: Format,
 	pub classes: Vec<Class>,
 	pub view_with: Option<Vec<String>>,
+	#[serde(default = "defaults::latexmk")]
+	pub latexmk: bool,
 }
 
 #[derive(Deserialize, Debug, PartialEq, Clone)]
@@ -45,6 +47,8 @@ pub enum DocumentType {
 
 mod defaults {
 	use super::Format;
+
+	pub fn latexmk() -> bool { false }
 
 	pub fn config_delimiter() -> String { String::from(">") }
 	pub fn config_default_format() -> Format { Format::Markdown }
@@ -117,6 +121,7 @@ mod test {
 					teacher: String::from("Mr. Feynman"),
 					active: true
 				}],
+				latexmk: false
 			}
 		);
 		// Custom default_format
@@ -143,6 +148,7 @@ mod test {
 					teacher: String::from("Mr. Feynman"),
 					active: true
 				}],
+				latexmk: false
 			}
 		);
 		// Multiple classes
@@ -181,6 +187,7 @@ mod test {
 						active: false
 					}
 				],
+				latexmk: false
 			}
 		);
 		Ok(())

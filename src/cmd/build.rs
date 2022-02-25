@@ -1,8 +1,10 @@
+use clap::ArgMatches;
+
 use crate::branch::Branch;
 use crate::conf::Config;
 use crate::out::task;
 
-pub fn run() {
+pub fn run(args: &ArgMatches) {
 	let config = Config::read().expect("Failed to read from configuration file");
 
 	let mut branches = Vec::new();
@@ -14,7 +16,7 @@ pub fn run() {
 		branches
 			.get(0)
 			.unwrap()
-			.build(&config)
+			.build(&config, &(config.latexmk || args.is_present("latexmk")))
 			.expect("Failed to build");
 	});
 }
