@@ -5,10 +5,10 @@ use chrono::Duration;
 use chrono_humanize::{Accuracy, HumanTime, Tense};
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Confirm;
+use task_log::task;
 
 use crate::branch::Branch;
 use crate::conf::Config;
-use crate::out::task;
 
 pub fn run() {
 	let config = Config::read().expect("Failed to read from configuration file");
@@ -117,7 +117,7 @@ pub fn ask(missing_pdfs: &Vec<&Branch>, old_pdfs: &Vec<&Branch>) -> Result<(bool
 
 pub fn build_all(config: &Config, branches: Vec<&Branch>) {
 	for branch in branches {
-		task(&format!("Building {}", branch.path.display()), || {
+		task(format!("Building {}", branch.path.display()), || {
 			branch
 				.build(config, &config.latexmk)
 				.expect("Failed to build branch");

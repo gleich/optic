@@ -5,10 +5,10 @@ use chrono::Local;
 use chrono_humanize::{Accuracy, HumanTime, Tense};
 use colorful::Colorful;
 use notify::{DebouncedEvent, RecommendedWatcher, Watcher};
+use task_log::task;
 
 use crate::branch::Branch;
 use crate::conf::Config;
-use crate::out::task;
 
 pub fn run() {
 	let config = Config::read().expect("Failed to read from configuration file");
@@ -24,7 +24,7 @@ pub fn run() {
 
 	if !branch.pdf_path.exists() {
 		task(
-			&format!("Building starter PDF for \"{}\"", branch.name),
+			format!("Building starter PDF for \"{}\"", branch.name),
 			|| {
 				branch
 					.build(&config, &config.latexmk)
@@ -34,7 +34,7 @@ pub fn run() {
 	}
 
 	task(
-		&format!(
+		format!(
 			"Opening \"{}\" with {}",
 			branch.name,
 			config.view_with.as_ref().unwrap().get(0).unwrap()

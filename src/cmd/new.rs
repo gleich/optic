@@ -7,10 +7,10 @@ use chrono::Local;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::{FuzzySelect, Input, Select};
 use strum::VariantNames;
+use task_log::task;
 
 use crate::branch::Branch;
 use crate::conf::{Class, Config, DocumentType, Format};
-use crate::out::task;
 use crate::template::{BranchTemplate, RootTemplate};
 
 pub fn run() {
@@ -29,12 +29,12 @@ pub fn run() {
 		fs::create_dir_all(branch.path.parent().unwrap())
 			.expect("Failed to create parent folder for new branch file");
 		fs::create_dir_all(&branch.imgs_dir).expect("Failed to create images directory for branch");
-		fs::write(&branch.path, formatted_branch).expect("Failed to format branch");
+		fs::write(&branch.path, &formatted_branch).expect("Failed to format branch");
 	});
 
 	if config.open_with.is_some() {
 		task(
-			&format!(
+			format!(
 				"Opening with {}",
 				config.open_with.as_ref().unwrap().get(0).unwrap()
 			),

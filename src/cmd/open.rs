@@ -1,6 +1,7 @@
+use task_log::task;
+
 use crate::branch::Branch;
 use crate::conf::Config;
-use crate::out::task;
 
 pub fn run() {
 	let config = Config::read().expect("Failed to read from configuration file");
