@@ -19,7 +19,7 @@ pub fn run() {
 
 	task(format!("Opening \"{}\" with {}", branch.name, cmd), || {
 		Command::new(cmd)
-			.args(&args)
+			.args(args)
 			.arg(&branch.pdf_path)
 			.output()
 			.expect("Failed to run terminal command ot open the PDF");
