@@ -14,7 +14,8 @@ pub fn run() {
 	let branches_to_commit = working_branches(branches).expect("Failed to get working branches");
 	for (msg, branch) in branches_to_commit {
 		task(format!("Committing {}", branch.name), || {
-			commit_branch(msg, &branch).expect(&format!("Failed to commit {}", branch.name));
+			commit_branch(msg, &branch)
+				.unwrap_or_else(|_| panic!("Failed to commit {}", branch.name));
 		})
 	}
 }
@@ -35,18 +36,15 @@ fn working_branches(branches: Vec<Branch>) -> Result<HashMap<String, Branch>> {
 	for branch in branches {
 		let branch_status = repo.status_file(branch.path.as_path())?;
 		if new_file_states.contains(&branch_status) {
-			working.insert(
-				format!("new({}): {}", branch.doc_type.to_string(), branch.name),
-				branch,
-			);
+			working.insert(format!("new({}): {}", branch.doc_type, branch.name), branch);
 		} else if modified_file_states.contains(&branch_status) {
 			working.insert(
-				format!("update({}): {}", branch.doc_type.to_string(), branch.name),
+				format!("update({}): {}", branch.doc_type, branch.name),
 				branch,
 			);
 		} else if deleted_file_states.contains(&branch_status) {
 			working.insert(
-				format!("delete({}): {}", branch.doc_type.to_string(), branch.name),
+				format!("delete({}): {}", branch.doc_type, branch.name),
 				branch,
 			);
 		}
