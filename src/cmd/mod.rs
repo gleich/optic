@@ -1,5 +1,6 @@
 pub mod build;
 pub mod check;
+pub mod commit;
 pub mod completion;
 pub mod new;
 pub mod open;

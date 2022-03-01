@@ -16,6 +16,7 @@ fn main() {
 		Some(("check", _)) => cmd::check::run(),
 		Some(("trash", _)) => cmd::trash::run(),
 		Some(("completion", args)) => cmd::completion::run(args),
+		Some(("commit", _)) => cmd::commit::run(),
 		_ => unreachable!(),
 	}
 }

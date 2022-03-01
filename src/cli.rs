@@ -28,4 +28,5 @@ pub fn setup() -> Command<'static> {
 				.about("Generate shell completion for optic")
 				.arg(Arg::new("shell").possible_values(Shell::possible_values())),
 		)
+		.subcommand(Command::new("commit").about("Commit uncommitted branches"))
 }
