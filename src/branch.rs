@@ -303,7 +303,8 @@ mod test {
 	use std::time::SystemTime;
 
 	use anyhow::Result;
-	use chrono::Local;
+	use chrono::{Datelike, Local, Month};
+	use num_traits::FromPrimitive;
 
 	use crate::branch::Branch;
 	use crate::conf::{Class, DocumentType, Format};
@@ -313,6 +314,7 @@ mod test {
 	fn new() -> Result<()> {
 		let date_now = Local::now().date();
 		let systemtime_now = SystemTime::now();
+		let month = Month::from_u32(date_now.month()).unwrap().name();
 		assert_eq!(
 			Branch::new(
 				String::from("Working"),
@@ -344,9 +346,12 @@ mod test {
 					teacher: String::from("Mr. Feynman"),
 					active: true
 				},
-				path: PathBuf::from("docs/AP Physics 2/February/Worksheet/Working.tex"),
-				pdf_path: PathBuf::from("pdfs/AP Physics 2/February/Worksheet/Working.pdf"),
-				imgs_dir: PathBuf::from("imgs/AP Physics 2/February/Working"),
+				path: PathBuf::from(format!("docs/AP Physics 2/{}/Worksheet/Working.tex", month)),
+				pdf_path: PathBuf::from(format!(
+					"pdfs/AP Physics 2/{}/Worksheet/Working.pdf",
+					month
+				)),
+				imgs_dir: PathBuf::from(format!("imgs/AP Physics 2/{}/Working", month)),
 				branch_template: Some(BranchTemplate {
 					path: PathBuf::from("./templates/branch/base.tex.hbs"),
 					name: String::from("base"),
@@ -392,9 +397,15 @@ mod test {
 					teacher: String::from("Mr. Buffet"),
 					active: true
 				},
-				path: PathBuf::from("docs/Economics Honors/February/Other/Hello World.md"),
-				pdf_path: PathBuf::from("pdfs/Economics Honors/February/Other/Hello World.pdf"),
-				imgs_dir: PathBuf::from("imgs/Economics Honors/February/Hello World"),
+				path: PathBuf::from(format!(
+					"docs/Economics Honors/{}/Other/Hello World.md",
+					month
+				)),
+				pdf_path: PathBuf::from(format!(
+					"pdfs/Economics Honors/{}/Other/Hello World.pdf",
+					month
+				)),
+				imgs_dir: PathBuf::from(format!("imgs/Economics Honors/{}/Hello World", month)),
 				branch_template: Some(BranchTemplate {
 					path: PathBuf::from("./templates/branch/base.tex.hbs"),
 					name: String::from("base"),
