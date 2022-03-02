@@ -17,6 +17,14 @@ pub fn run() {
 	let branches = Branch::get_all(&config).expect("Failed to get all branches");
 	let branch = branches.get(0).unwrap();
 
+	if !branch.pdf_path.exists() {
+		task("Building PDF", || {
+			branch
+				.build(&config, &config.latexmk)
+				.expect("Failed to build PDF for branch");
+		})
+	}
+
 	task(format!("Opening \"{}\" with {}", branch.name, cmd), || {
 		Command::new(cmd)
 			.args(args)
