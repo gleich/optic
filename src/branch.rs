@@ -243,7 +243,7 @@ impl Branch {
 			.context("Failed to create temporary directory for building")?;
 		env::set_current_dir(folders::BUILD)
 			.context("Failed to enter temporary directory to build")?;
-		fs::write(files::LATEX_BUILD, latex)?;
+		fs::write(files::LATEX_BUILD, latex).context("Failed to write to build LaTeX file")?;
 
 		let build_output = Command::new(build_engine)
 			.arg(files::LATEX_BUILD)
@@ -251,6 +251,7 @@ impl Branch {
 			.stdout(Stdio::piped())
 			.output()?;
 		if !build_output.status.success() {
+			env::set_current_dir("..")?;
 			fs::write(files::FAIL_LOG, build_output.stdout)
 				.context("Failed to write to log file")?;
 			bail!(

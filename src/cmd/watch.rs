@@ -66,7 +66,7 @@ pub fn run() {
 				);
 				let result = branch.build(&config, &config.latexmk);
 				if result.is_err() {
-					println!("  {}", "BUILD FAILED".bg_red().white());
+					println!("   {}", "BUILD FAILED".red());
 				} else {
 					println!(
 						"   {}",
@@ -80,7 +80,7 @@ pub fn run() {
 					)
 				}
 			}
-			DebouncedEvent::NoticeRemove(path) => {
+			DebouncedEvent::NoticeRemove(path) | DebouncedEvent::Remove(path) => {
 				println!("\n{} has been deleted. Stopping watch", path.display());
 				return;
 			}
