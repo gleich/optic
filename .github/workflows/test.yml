@@ -25,6 +25,11 @@ jobs:
               - 'Cargo.lock'
               - '.github/workflows/**'
       - if: steps.changes.outputs.rust == 'true'
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+      - if: steps.changes.outputs.rust == 'true'
         uses: davidB/rust-cargo-make@v1
       - if: steps.changes.outputs.rust == 'true'
         run: cargo make test-rust
