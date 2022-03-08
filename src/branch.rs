@@ -293,7 +293,7 @@ impl Branch {
 		Command::new(open_with.get(0).unwrap())
 			.args(open_with.iter().skip(1))
 			.arg(&self.path)
-			.output()?;
+			.status()?;
 		Ok(())
 	}
 }
