@@ -56,29 +56,23 @@ fn ask(config: &Config) -> Result<Branch> {
 		.with_prompt("Name")
 		.interact_text()?;
 
-	let format = Format::from_str(
-		Format::VARIANTS
-			.get(
-				Select::with_theme(&theme)
-					.with_prompt("Format")
-					.items(Format::VARIANTS)
-					.default(0)
-					.interact()?,
-			)
-			.unwrap(),
-	)?;
+	let format = Format::from_repr(
+		Select::with_theme(&theme)
+			.with_prompt("Format")
+			.items(Format::VARIANTS)
+			.default(0)
+			.interact()?,
+	)
+	.unwrap();
 
-	let doc_type = DocumentType::from_str(
-		DocumentType::VARIANTS
-			.get(
-				FuzzySelect::with_theme(&theme)
-					.with_prompt("Type")
-					.items(DocumentType::VARIANTS)
-					.default(0)
-					.interact()?,
-			)
-			.unwrap(),
-	)?;
+	let doc_type = DocumentType::from_repr(
+		FuzzySelect::with_theme(&theme)
+			.with_prompt("Type")
+			.items(DocumentType::VARIANTS)
+			.default(0)
+			.interact()?,
+	)
+	.unwrap();
 
 	let mut active_classes = config
 		.classes

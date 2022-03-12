@@ -3,7 +3,7 @@ use std::{fmt, fs};
 
 use anyhow::Result;
 use serde::Deserialize;
-use strum_macros::{Display, EnumString, EnumVariantNames};
+use strum_macros::{Display, EnumString, EnumVariantNames, FromRepr};
 
 use crate::locations;
 
@@ -29,13 +29,13 @@ pub struct Class {
 	pub active: bool,
 }
 
-#[derive(PartialEq, Debug, Display, Deserialize, EnumVariantNames, EnumString, Clone)]
+#[derive(PartialEq, Debug, Display, Deserialize, EnumVariantNames, EnumString, Clone, FromRepr)]
 pub enum Format {
 	LaTeX,
 	Markdown,
 }
 
-#[derive(PartialEq, Debug, Display, Deserialize, EnumVariantNames, EnumString)]
+#[derive(PartialEq, Debug, Display, Deserialize, EnumVariantNames, EnumString, FromRepr)]
 pub enum DocumentType {
 	Worksheet,
 	Note,
