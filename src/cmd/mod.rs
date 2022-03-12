@@ -5,5 +5,6 @@ pub mod completion;
 pub mod new;
 pub mod open;
 pub mod reveal;
+pub mod search;
 pub mod trash;
 pub mod watch;

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::str::FromStr;
@@ -295,6 +296,12 @@ impl Branch {
 			.arg(&self.path)
 			.status()?;
 		Ok(())
+	}
+}
+
+impl Display for Branch {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{} ({})", self.name, self.class.name)
 	}
 }
 

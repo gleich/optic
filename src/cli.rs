@@ -29,4 +29,5 @@ pub fn setup() -> Command<'static> {
 				.arg(Arg::new("shell").possible_values(Shell::possible_values())),
 		)
 		.subcommand(Command::new("commit").about("Commit uncommitted branches"))
+		.subcommand(Command::new("search").about("Search for a branch"))
 }
