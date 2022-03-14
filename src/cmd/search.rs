@@ -23,7 +23,12 @@ pub fn run() {
 		}
 		Action::Open => {
 			task(format!("Opening {}", branch.name), || {
-				branch.open(&config).expect("Failed to open PDF")
+				branch.open(&config).expect("Failed to open branch")
+			})
+		}
+		Action::Reveal => {
+			task(format!("Revealing {}", branch.name), || {
+				branch.reveal(&config, true).expect("Failed to reveal PDF")
 			})
 		}
 	};
@@ -33,6 +38,7 @@ pub fn run() {
 enum Action {
 	Build,
 	Open,
+	Reveal,
 }
 
 fn ask(branches: &[Branch]) -> Result<(&Branch, Action)> {

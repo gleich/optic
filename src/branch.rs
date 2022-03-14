@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::env::consts;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -276,7 +277,10 @@ impl Branch {
 		Ok(())
 	}
 
-	pub fn view(&self, config: &Config, blocking: bool) -> Result<()> {
+	pub fn view(&self, config: &Config, blocking: bool, build: bool) -> Result<()> {
+		if build && !self.pdf_path.exists() {
+			self.build(config, &config.latexmk)?;
+		}
 		let view_with = config.view_with.as_ref().unwrap();
 		let mut cmd = Command::new(view_with.get(0).unwrap());
 		cmd.args(view_with.iter().skip(1));
@@ -295,6 +299,27 @@ impl Branch {
 			.args(open_with.iter().skip(1))
 			.arg(&self.path)
 			.status()?;
+		Ok(())
+	}
+
+	pub fn reveal(&self, config: &Config, build: bool) -> Result<()> {
+		if build && !self.pdf_path.exists() {
+			self.build(config, &config.latexmk)?;
+		}
+
+		let (cmd, args) = match consts::OS {
+			"macos" => ("open", vec!["-R"]),
+			"windows" => ("explorer", vec![]),
+			"linux" => ("xdg-open", vec![]),
+			_ => bail!("OS ({}) doesn't have support for this command", consts::OS),
+		};
+
+		Command::new(cmd)
+			.args(args)
+			.arg(&self.pdf_path)
+			.status()
+			.context("Failed to run terminal command to reveal PDF")?;
+
 		Ok(())
 	}
 }

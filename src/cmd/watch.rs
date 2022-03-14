@@ -29,17 +29,6 @@ pub fn run() {
 		)
 		.expect("Failed to watch branch's root template file");
 
-	if !branch.pdf_path.exists() {
-		task(
-			format!("Building starter PDF for \"{}\"", branch.name),
-			|| {
-				branch
-					.build(&config, &config.latexmk)
-					.expect("Failed to build branch");
-			},
-		)
-	}
-
 	task(
 		format!(
 			"Opening \"{}\" with {}",
@@ -48,7 +37,7 @@ pub fn run() {
 		),
 		|| {
 			branch
-				.view(&config, false)
+				.view(&config, false, true)
 				.expect("Failed to open branch with viewer");
 		},
 	);

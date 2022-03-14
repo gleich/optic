@@ -1,5 +1,4 @@
 use std::fs;
-use std::str::FromStr;
 use std::time::SystemTime;
 
 use anyhow::Result;
