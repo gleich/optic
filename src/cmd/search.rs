@@ -1,6 +1,6 @@
 use anyhow::Result;
 use dialoguer::theme::ColorfulTheme;
-use dialoguer::FuzzySelect;
+use dialoguer::{FuzzySelect, Select};
 use strum::VariantNames;
 use strum_macros::{Display, EnumVariantNames, FromRepr};
 use task_log::task;
@@ -53,7 +53,7 @@ fn ask(branches: &[Branch]) -> Result<(&Branch, Action)> {
 		.unwrap();
 
 	let action = Action::from_repr(
-		FuzzySelect::with_theme(&theme)
+		Select::with_theme(&theme)
 			.with_prompt("Action")
 			.items(Action::VARIANTS)
 			.default(0)
