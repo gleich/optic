@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use chrono::Local;
 use chrono_humanize::{Accuracy, HumanTime, Tense};
+use clap::ArgMatches;
 use colorful::Colorful;
 use notify::{DebouncedEvent, RecommendedWatcher, Watcher};
 use task_log::task;
@@ -10,7 +11,7 @@ use task_log::task;
 use crate::branch::Branch;
 use crate::conf::Config;
 
-pub fn run() {
+pub fn run(args: &ArgMatches) {
 	let config = Config::read().expect("Failed to read from configuration file");
 	let branches = Branch::get_all(&config).expect("Failed to get all branches");
 	let branch = branches.get(0).unwrap();
@@ -53,7 +54,7 @@ pub fn run() {
 						.bg_yellow()
 						.black()
 				);
-				let result = branch.build(&config, &config.latexmk);
+				let result = branch.build(&config, &(config.latexmk || args.is_present("latexmk")));
 				if result.is_err() {
 					println!("   {}", "BUILD FAILED".red());
 				} else {

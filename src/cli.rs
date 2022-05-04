@@ -16,7 +16,16 @@ pub fn setup() -> Command<'static> {
 					.takes_value(false),
 			),
 		)
-		.subcommand(Command::new("watch").about("View a branch and build it on change"))
+		.subcommand(
+			Command::new("watch")
+				.about("View a branch and build it on change")
+				.arg(
+					Arg::new("latexmk")
+						.long("latexmk")
+						.help("Use latexmk instead of pdflatex to build the PDF")
+						.takes_value(false),
+				),
+		)
 		.subcommand(Command::new("open").about("Open a branch in an editor"))
 		.subcommand(Command::new("reveal").about("Open a branch PDF in finder"))
 		.subcommand(

@@ -10,7 +10,7 @@ fn main() {
 	match matches.subcommand() {
 		Some(("new", _)) => cmd::new::run(),
 		Some(("build", args)) => cmd::build::run(args),
-		Some(("watch", _)) => cmd::watch::run(),
+		Some(("watch", args)) => cmd::watch::run(args),
 		Some(("open", _)) => cmd::open::run(),
 		Some(("reveal", _)) => cmd::reveal::run(),
 		Some(("check", _)) => cmd::check::run(),
