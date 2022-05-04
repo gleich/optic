@@ -1,4 +1,5 @@
 use anyhow::Result;
+use copypasta::{ClipboardContext, ClipboardProvider};
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::{FuzzySelect, Select};
 use strum::VariantNames;
@@ -31,6 +32,14 @@ pub fn run() {
 				branch.reveal(&config, true).expect("Failed to reveal PDF")
 			})
 		}
+		Action::Path => {
+			println!("{}", branch.path.display());
+			ClipboardContext::new()
+				.expect("Failed to setup clipboard context")
+				.set_contents(branch.path.to_str().unwrap().to_string())
+				.expect("Failed to set clipboard context");
+			println!("Copied to clipboard");
+		}
 	};
 }
 
@@ -39,6 +48,7 @@ enum Action {
 	Build,
 	Open,
 	Reveal,
+	Path,
 }
 
 fn ask(branches: &[Branch]) -> Result<(&Branch, Action)> {
