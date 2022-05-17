@@ -9,7 +9,11 @@ pub fn run() {
 	let branch = branches.get(0).unwrap();
 
 	task(format!("Moving {} to trash", branch.name), || {
-		trash::delete_all([&branch.path, &branch.pdf_path, &branch.imgs_dir])
-			.expect("Failed to move branch file, PDF, or images directory to trash");
+		trash::delete_all(
+			[&branch.path, &branch.pdf_path, &branch.imgs_dir]
+				.into_iter()
+				.filter(|x| x.exists()),
+		)
+		.expect("Failed to move branch file, PDF, or images directory to trash");
 	})
 }
