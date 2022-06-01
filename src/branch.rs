@@ -146,7 +146,10 @@ impl Branch {
 	pub fn parse(path: PathBuf, config: &Config) -> Result<Self> {
 		let format = Format::from_path(&path).unwrap();
 		let mut data = HashMap::new();
-		for line in fs::read_to_string(&path)?.lines() {
+		for line in fs::read_to_string(&path)
+			.context(format!("Failed to read contents of {}", path.display()))?
+			.lines()
+		{
 			let trimmed_line = line.trim();
 			let raw_chunks = trimmed_line.split_once(&config.delimiter);
 			if raw_chunks.is_none() {
@@ -191,10 +194,11 @@ impl Branch {
 			None,
 			RootTemplate::from_filename(&format!("{}.hbs", data.get("root").unwrap())),
 			Local
-				.from_local_date(&NaiveDate::parse_from_str(
-					data.get("created").unwrap(),
-					"%F",
-				)?)
+				.from_local_date(
+					&NaiveDate::parse_from_str(data.get("created").unwrap(), "%F").context(
+						format!("Failed to parse created date from {}", path.display()),
+					)?,
+				)
 				.unwrap(),
 			fs::metadata(path)?.modified()?,
 		)
@@ -203,10 +207,14 @@ impl Branch {
 	pub fn get_all(config: &Config) -> Result<Vec<Self>> {
 		let mut branches: Vec<Self> = Vec::new();
 		for entry in WalkDir::new(folders::BRANCHES) {
-			let entry = entry?;
+			let entry = entry.context("Failed to open walk dir entry")?;
 			let extension = Format::from_path(entry.path());
+			let path = entry.path();
 			if entry.file_type().is_file() && extension.is_some() {
-				branches.push(Self::parse(entry.path().to_path_buf(), config)?)
+				branches.push(
+					Self::parse(path.to_path_buf(), config)
+						.context(format!("Failed to parse {}", path.display()))?,
+				)
 			}
 		}
 		branches.sort_by(|a, b| b.mod_time.cmp(&a.mod_time));
