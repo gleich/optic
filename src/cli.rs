@@ -1,4 +1,4 @@
-use clap::{Arg, Command};
+use clap::{value_parser, Arg, Command};
 use clap_complete::Shell;
 
 pub fn setup() -> Command<'static> {
@@ -35,7 +35,11 @@ pub fn setup() -> Command<'static> {
 		.subcommand(
 			Command::new("completion")
 				.about("Generate shell completion for optic")
-				.arg(Arg::new("shell").possible_values(Shell::possible_values())),
+				.arg(
+					Arg::new("shell")
+						.takes_value(true)
+						.value_parser(value_parser!(Shell)),
+				),
 		)
 		.subcommand(Command::new("commit").about("Commit uncommitted branches"))
 		.subcommand(Command::new("search").about("Search for a branch"))
