@@ -1,6 +1,6 @@
 [package]
 name = "optic"
-version = "2.0.0"
+version = "2.0.1"
 description = "Schoolwork as code"
 authors = ["Matt Gleich <email@mattglei.ch>"]
 edition = "2021"
